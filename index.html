@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Perceptron OTP Visualizer</title>
+  <meta name="description" content="NAND→論理ゲート、パーセプトロンでのゲート再現、2層XOR、そしてOTPアナロジーを可視化する教育用ツール">
+  <!-- セキュリティヘッダーはローカル開発ではmetaタグでは無効。GitHub Pagesでは.htaccessまたはサーバー設定で設定 -->
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- MathJax v3 config -->
+  <script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']],
+      processEscapes: true
+    },
+    options: {
+      skipHtmlTags: ['script','noscript','style','textarea','pre','code']
+    }
+  };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" 
+          crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <h1>Perceptron OTP Visualizer</h1>
+    <p class="subtitle">NANDの普遍性 → パーセプトロンでゲート → 多層でパーセプトロンXORを実現 → パーセプトロンXORでOTPをアナロジー</p>
+    <button id="themeToggle" class="theme-toggle" title="テーマを切り替え" aria-label="テーマを切り替え">
+      <span class="theme-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+          <!-- 月アイコン -->
+          <path class="moon-icon" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          <!-- 太陽アイコン -->
+          <g class="sun-icon">
+            <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"></circle>
+            <line x1="12" y1="1" x2="12" y2="4" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="12" y1="20" x2="12" y2="23" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="1" y1="12" x2="4" y2="12" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="20" y1="12" x2="23" y2="12" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" stroke-width="2" stroke-linecap="round"></line>
+          </g>
+        </svg>
+      </span>
+    </button>
+  </header>
+
+  <main>
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="nand" role="tab" aria-selected="true" aria-controls="nand">① NANDユニバーサル</button>
+      <button class="tab-btn" data-tab="gates" role="tab" aria-selected="false" aria-controls="gates">② パーセプトロンでゲート</button>
+      <button class="tab-btn" data-tab="xor" role="tab" aria-selected="false" aria-controls="xor">③ パーセプトロンXOR</button>
+      <button class="tab-btn" data-tab="otp" role="tab" aria-selected="false" aria-controls="otp">④ パーセプトロンOTP</button>
+      <button class="tab-btn" data-tab="glossary" role="tab" aria-selected="false" aria-controls="glossary">⑤ 用語集</button>
+    </nav>
+
+    <!-- 1) NAND UNIVERSAL -->
+    <section id="nand" class="tab active">
+      <h2>NANDユニバーサル</h2>
+      <p>
+        NANDだけで <strong>NOT/AND/OR/XOR</strong> を構成できます。  
+        各ゲートの真理値表で論理関数の等価性を確認できます。
+      </p>
+      
+      <div class="nand-reference">
+        <h4>基本のNANDゲート</h4>
+        <div class="nand-gate-display">
+          <svg class="nand-gate-symbol" viewBox="0 0 120 80" width="120" height="80">
+            <!-- NAND gate symbol -->
+            <path d="M20 20 L20 60 L50 60 Q80 60 80 40 Q80 20 50 20 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+            <circle cx="85" cy="40" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+            <!-- Input lines -->
+            <line x1="5" y1="30" x2="20" y2="30" stroke="var(--text)" stroke-width="2"/>
+            <line x1="5" y1="50" x2="20" y2="50" stroke="var(--text)" stroke-width="2"/>
+            <!-- Output line -->
+            <line x1="89" y1="40" x2="115" y2="40" stroke="var(--text)" stroke-width="2"/>
+            <!-- Input labels (positioned to avoid wire overlap) -->
+            <text x="8" y="20" class="gate-label">a</text>
+            <text x="8" y="65" class="gate-label">b</text>
+            <!-- Output label -->
+            <text x="100" y="30" class="gate-label">z</text>
+          </svg>
+          <div class="nand-truth">
+            <table class="mini-truth-table">
+              <thead><tr><th>a</th><th>b</th><th>NAND</th></tr></thead>
+              <tbody>
+                <tr><td>0</td><td>0</td><td>1</td></tr>
+                <tr><td>0</td><td>1</td><td>1</td></tr>
+                <tr><td>1</td><td>0</td><td>1</td></tr>
+                <tr><td>1</td><td>1</td><td>0</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="io-panel">
+        <div class="network">
+          <details open aria-expanded="true">
+            <summary class="accordion-summary">1. 基本ゲート構成</summary>
+            <div class="layer">
+            <div class="neuron-card">
+              <h3>NOTゲート</h3>
+              <div class="explanation">NANDゲートの2入力を同一にすると、NOTゲートと同等になります。<br/>NOT(a) = NAND(a, a)</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="not">
+                  <thead><tr><th>a</th><th>a</th><th>NAND(a, a)</th><th>NOT(a)</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-result="1"><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+                    <tr data-pattern="1,1" data-result="0"><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="gate-symbol" viewBox="0 0 120 80" width="120" height="80">
+                    <!-- NAND gate symbol -->
+                    <path d="M20 20 L20 60 L50 60 Q80 60 80 40 Q80 20 50 20 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                    <circle cx="85" cy="40" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                    <!-- Input lines -->
+                    <line x1="5" y1="30" x2="20" y2="30" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="5" y1="50" x2="20" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <!-- Output line -->
+                    <line x1="89" y1="40" x2="115" y2="40" stroke="var(--text)" stroke-width="2"/>
+                    <!-- Input labels (positioned to avoid wire overlap) -->
+                    <text x="8" y="20" class="input-label" id="gate-input1">a</text>
+                    <text x="8" y="65" class="input-label" id="gate-input2">a</text>
+                    <!-- Output label -->
+                    <text x="100" y="30" class="output-label" id="gate-output">z</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="value-a1">a=0</span>
+                      <span id="value-a2">a=0</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="value-z">z=1</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="neuron-card">
+              <h3>ANDゲート</h3>
+              <div class="explanation">2つのNANDゲートをつなげると、ANDゲートと同等になります。<br/>後段のNANDゲートはNOTゲートに置き換えられます。<br/>AND(a, b) = NAND(NAND(a, b), NAND(a, b))</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="and">
+                  <thead><tr><th>a</th><th>b</th><th>t←NAND(a, b)</th><th>NAND(t, t)</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-intermediate="1" data-result="0"><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+                    <tr data-pattern="0,1" data-intermediate="1" data-result="0"><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+                    <tr data-pattern="1,0" data-intermediate="1" data-result="0"><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+                    <tr data-pattern="1,1" data-intermediate="0" data-result="1"><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="gate-circuit" viewBox="0 0 260 140" width="260" height="140">
+                    <!-- First NAND gate -->
+                    <g class="nand-gate-1">
+                      <path d="M20 20 L20 60 L50 60 Q80 60 80 40 Q80 20 50 20 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="85" cy="40" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Input lines to first NAND -->
+                      <line x1="5" y1="30" x2="20" y2="30" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="5" y1="50" x2="20" y2="50" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from first NAND -->
+                      <line x1="89" y1="40" x2="120" y2="40" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Labels for first NAND -->
+                      <text x="8" y="20" class="circuit-label" id="and-input1">a</text>
+                      <text x="8" y="65" class="circuit-label" id="and-input2">b</text>
+                    </g>
+                    
+                    <!-- Connection lines to second NAND -->
+                    <line x1="120" y1="40" x2="120" y2="30" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="120" y1="40" x2="120" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="120" y1="30" x2="140" y2="30" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="120" y1="50" x2="140" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    
+                    <!-- Second NAND gate -->
+                    <g class="nand-gate-2">
+                      <path d="M140 20 L140 60 L170 60 Q200 60 200 40 Q200 20 170 20 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="205" cy="40" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from second NAND -->
+                      <line x1="209" y1="40" x2="245" y2="40" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output label -->
+                      <text x="230" y="30" class="circuit-label" id="and-output">z</text>
+                    </g>
+                    
+                    <!-- Intermediate value label -->
+                    <text x="100" y="30" class="circuit-label intermediate-label" id="and-intermediate">t</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="and-value-a">a=0</span>
+                      <span id="and-value-b">b=0</span>
+                    </div>
+                    <div class="intermediate-value">
+                      <span id="and-value-t">t=1</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="and-value-z">z=0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="neuron-card">
+              <h3>ORゲート</h3>
+              <div class="explanation">3つのNANDゲートをつなげると、ORゲートと同等になります。<br/>入力aとbをそれぞれNOTしてからNANDで結合します。<br/>OR(a, b) = NAND(NAND(a, a), NAND(b, b))</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="or">
+                  <thead><tr><th>a</th><th>b</th><th>t←NAND(a, a)</th><th>s←NAND(b, b)</th><th>NAND(s, t)</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-intermediate1="1" data-intermediate2="1" data-result="0"><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+                    <tr data-pattern="0,1" data-intermediate1="1" data-intermediate2="0" data-result="1"><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+                    <tr data-pattern="1,0" data-intermediate1="0" data-intermediate2="1" data-result="1"><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+                    <tr data-pattern="1,1" data-intermediate1="0" data-intermediate2="0" data-result="1"><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="gate-circuit" viewBox="0 0 280 160" width="280" height="160">
+                    <!-- First NAND gate (top) -->
+                    <g class="nand-gate-1">
+                      <path d="M20 30 L20 70 L50 70 Q80 70 80 50 Q80 30 50 30 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="85" cy="50" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Input lines to first NAND -->
+                      <line x1="5" y1="40" x2="20" y2="40" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="5" y1="60" x2="20" y2="60" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from first NAND -->
+                      <line x1="89" y1="50" x2="120" y2="50" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Labels for first NAND -->
+                      <text x="8" y="30" class="circuit-label" id="or-input1">a</text>
+                      <text x="8" y="75" class="circuit-label" id="or-input1-dup">a</text>
+                    </g>
+                    
+                    <!-- Second NAND gate (bottom) -->
+                    <g class="nand-gate-2">
+                      <path d="M20 90 L20 130 L50 130 Q80 130 80 110 Q80 90 50 90 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="85" cy="110" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Input lines to second NAND -->
+                      <line x1="5" y1="100" x2="20" y2="100" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="5" y1="120" x2="20" y2="120" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from second NAND -->
+                      <line x1="89" y1="110" x2="120" y2="110" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Labels for second NAND -->
+                      <text x="8" y="90" class="circuit-label" id="or-input2">b</text>
+                      <text x="8" y="135" class="circuit-label" id="or-input2-dup">b</text>
+                    </g>
+                    
+                    <!-- Connection lines to third NAND -->
+                    <line x1="120" y1="50" x2="140" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="120" y1="110" x2="140" y2="110" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="50" x2="140" y2="70" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="110" x2="140" y2="90" stroke="var(--text)" stroke-width="2"/>
+                    
+                    <!-- Third NAND gate (final) -->
+                    <g class="nand-gate-3">
+                      <path d="M160 60 L160 100 L190 100 Q220 100 220 80 Q220 60 190 60 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="225" cy="80" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Input lines to third NAND -->
+                      <line x1="140" y1="70" x2="160" y2="70" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="140" y1="90" x2="160" y2="90" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from third NAND -->
+                      <line x1="229" y1="80" x2="265" y2="80" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output label -->
+                      <text x="250" y="70" class="circuit-label" id="or-output">z</text>
+                    </g>
+                    
+                    <!-- Intermediate value labels -->
+                    <text x="100" y="40" class="circuit-label intermediate-label" id="or-intermediate1">t</text>
+                    <text x="100" y="125" class="circuit-label intermediate-label" id="or-intermediate2">s</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="or-value-a">a=0</span>
+                      <span id="or-value-b">b=0</span>
+                    </div>
+                    <div class="intermediate-value">
+                      <span id="or-value-t">t=1</span>
+                      <span id="or-value-s">s=1</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="or-value-z">z=0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details aria-expanded="false">
+            <summary class="accordion-summary secondary">2. 複合ゲート構成</summary>
+            <div class="layer">
+            <div class="neuron-card">
+              <h3>XORゲート</h3>
+              <div class="explanation">4つのNANDゲートをつなげると、XORゲートと同等になります。<br/>最初のNANDの出力を他の2つのNANDの片方の入力に使い、最後にそれらをNANDで結合します。<br/>XOR(a, b) = NAND(NAND(a, s), NAND(b, s)) where s = NAND(a, b)</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="xor">
+                  <thead><tr><th>a</th><th>b</th><th>s←NAND(a, b)</th><th>t←NAND(a, s)</th><th>u←NAND(b, s)</th><th>NAND(t, u)</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-intermediate1="1" data-intermediate2="1" data-intermediate3="1" data-result="0"><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+                    <tr data-pattern="0,1" data-intermediate1="1" data-intermediate2="1" data-intermediate3="0" data-result="1"><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+                    <tr data-pattern="1,0" data-intermediate1="1" data-intermediate2="0" data-intermediate3="1" data-result="1"><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+                    <tr data-pattern="1,1" data-intermediate1="0" data-intermediate2="1" data-intermediate3="1" data-result="0"><td>1</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="gate-circuit" viewBox="0 0 420 220" width="420" height="220">
+                    <!-- First NAND gate (s = NAND(a,b)) -->
+                    <g class="nand-gate-1">
+                      <path d="M20 75 L20 115 L50 115 Q80 115 80 95 Q80 75 50 75 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="85" cy="95" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Input lines to first NAND -->
+                      <line x1="5" y1="85" x2="20" y2="85" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="5" y1="105" x2="20" y2="105" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from first NAND -->
+                      <line x1="89" y1="95" x2="140" y2="95" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Labels for first NAND -->
+                      <text x="8" y="75" class="circuit-label">a</text>
+                      <text x="8" y="120" class="circuit-label">b</text>
+                    </g>
+                    
+                    <!-- Connection lines - avoiding overlap with cleaner routing -->
+                    <!-- s signal distribution -->
+                    <line x1="140" y1="80" x2="140" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="80" x2="140" y2="140" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="50" x2="180" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="140" x2="180" y2="140" stroke="var(--text)" stroke-width="2"/>
+                    
+                    <!-- a signal routing to top NAND -->
+                    <line x1="160" y1="30" x2="180" y2="30" stroke="var(--text)" stroke-width="2"/>
+                    <text x="163" y="20" class="circuit-label">a</text>
+                    
+                    <!-- b signal routing to bottom NAND -->
+                    <line x1="160" y1="160" x2="180" y2="160" stroke="var(--text)" stroke-width="2"/>
+                    <text x="163" y="175" class="circuit-label">b</text>
+                    
+                    <!-- Second NAND gate (t = NAND(a,s)) -->
+                    <g class="nand-gate-2">
+                      <path d="M180 20 L180 60 L210 60 Q240 60 240 40 Q240 20 210 20 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="245" cy="40" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from second NAND -->
+                      <line x1="249" y1="40" x2="280" y2="40" stroke="var(--text)" stroke-width="2"/>
+                    </g>
+                    
+                    <!-- Third NAND gate (u = NAND(b,s)) -->
+                    <g class="nand-gate-3">
+                      <path d="M180 130 L180 170 L210 170 Q240 170 240 150 Q240 130 210 130 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="245" cy="150" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from third NAND -->
+                      <line x1="249" y1="150" x2="280" y2="150" stroke="var(--text)" stroke-width="2"/>
+                    </g>
+                    
+                    <!-- Connection lines to fourth NAND - cleaner vertical routing -->
+                    <line x1="280" y1="40" x2="280" y2="85" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="280" y1="150" x2="280" y2="105" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="280" y1="85" x2="300" y2="85" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="280" y1="105" x2="300" y2="105" stroke="var(--text)" stroke-width="2"/>
+                    
+                    <!-- Fourth NAND gate (final output) -->
+                    <g class="nand-gate-4">
+                      <path d="M300 75 L300 115 L330 115 Q360 115 360 95 Q360 75 330 75 Z" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <circle cx="365" cy="95" r="4" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output line from fourth NAND -->
+                      <line x1="369" y1="95" x2="400" y2="95" stroke="var(--text)" stroke-width="2"/>
+                      <!-- Output label -->
+                      <text x="380" y="85" class="circuit-label">z</text>
+                    </g>
+                    
+                    <!-- Intermediate value labels - repositioned to avoid overlaps -->
+                    <text x="115" y="70" class="circuit-label intermediate-label">s</text>
+                    <text x="255" y="30" class="circuit-label intermediate-label">t</text>
+                    <text x="255" y="165" class="circuit-label intermediate-label">u</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="xor-value-a">a=0</span>
+                      <span id="xor-value-b">b=0</span>
+                    </div>
+                    <div class="intermediate-value">
+                      <span id="xor-value-s">s=1</span>
+                      <span id="xor-value-t">t=1</span>
+                      <span id="xor-value-u">u=1</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="xor-value-z">z=0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <details class="truth">
+        <summary>各ゲートの真理値表（まとめ）</summary>
+        <table>
+          <thead><tr><th>a</th><th>b</th><th>NOT a</th><th>AND</th><th>OR</th><th>XOR</th></tr></thead>
+          <tbody id="nand_truth_body"></tbody>
+        </table>
+      </details>
+    </section>
+
+    <!-- 2) PERCEPTRON GATES -->
+    <section id="gates" class="tab">
+      <h2>パーセプトロンでゲート（単層）</h2>
+      <p>
+        固定重み＋しきい値のステップ関数  
+        \\( \text{step}(z) = \begin{cases}1 & z \ge 0 \\ 0 & z < 0\end{cases} \\)  
+        でNOT/AND/OR/NANDを再現します。
+      </p>
+
+      <div class="input-panel">
+        <label><span>a</span>
+          <select id="pg_a"><option>0</option><option>1</option></select>
+        </label>
+        <label><span>b</span>
+          <select id="pg_b"><option>0</option><option>1</option></select>
+        </label>
+        <button id="pgTruthBtn">真理値表</button>
+      </div>
+
+      <div class="io-panel">
+        <div class="network">
+          <details open aria-expanded="true">
+            <summary class="accordion-summary">パーセプトロン ゲート一覧</summary>
+          <div class="layer">
+            <div class="neuron-card">
+              <h3>NOT</h3>
+              <div class="weights">\\( y = \text{step}(-1 \cdot a + 0.5) \\)</div>
+              <div class="calc">
+                <div>総入力 s = <span id="pg_not_s">0</span></div>
+                <div>出力 y = <span id="pg_not_y" class="bit">0</span></div>
+              </div>
+            </div>
+            <div class="neuron-card">
+              <h3>AND</h3>
+              <div class="weights">\\( y = \text{step}(1 \cdot a + 1 \cdot b - 1.5) \\)</div>
+              <div class="calc">
+                <div>総入力 s = <span id="pg_and_s">0</span></div>
+                <div>出力 y = <span id="pg_and_y" class="bit">0</span></div>
+              </div>
+            </div>
+            <div class="neuron-card">
+              <h3>OR</h3>
+              <div class="weights">\\( y = \text{step}(1 \cdot a + 1 \cdot b - 0.5) \\)</div>
+              <div class="calc">
+                <div>総入力 s = <span id="pg_or_s">0</span></div>
+                <div>出力 y = <span id="pg_or_y" class="bit">0</span></div>
+              </div>
+            </div>
+            <div class="neuron-card">
+              <h3>NAND</h3>
+              <div class="weights">\\( y = \text{step}(-1 \cdot a - 1 \cdot b + 1.5) \\)</div>
+              <div class="calc">
+                <div>総入力 s = <span id="pg_nand_s">0</span></div>
+                <div>出力 y = <span id="pg_nand_y" class="bit">0</span></div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <details class="truth">
+        <summary>真理値表（パーセプトロン単層）</summary>
+        <table>
+          <thead><tr><th>a</th><th>b</th><th>NOT a</th><th>AND</th><th>OR</th><th>NAND</th></tr></thead>
+        <tbody id="pg_truth_body"></tbody>
+        </table>
+      </details>
+    </section>
+
+    <!-- 3) PERCEPTRON XOR -->
+    <section id="xor" class="tab">
+      <h2>パーセプトロンXOR（2層合成）</h2>
+      <p>
+        XORは線形分離不可能で単層パーセプトロンでは実現できません。  
+        そこでORとNANDを第1層に置き、その出力をANDでまとめることで  
+        \\( \text{XOR}(x_1, x_2) = \text{AND}(\text{OR}(x_1, x_2), \text{NAND}(x_1, x_2)) \\)  
+        が成り立ちます。
+      </p>
+
+      <div class="input-panel">
+        <label><span>x1</span>
+          <select id="x1"><option>0</option><option>1</option></select>
+        </label>
+        <label><span>x2</span>
+          <select id="x2"><option>0</option><option>1</option></select>
+        </label>
+        <button id="xorTruthBtn">真理値表</button>
+      </div>
+
+      <div class="io-panel">
+        <div class="network">
+          <details open aria-expanded="true">
+            <summary class="accordion-summary">第1層：OR と NAND</summary>
+            <div class="layer">
+            <div class="neuron-card">
+              <h3>OR</h3>
+              <div class="weights">\\( y = \text{step}(x_1 + x_2 - 0.5) \\)</div>
+              <div class="calc">
+                <div>総入力 s<sub>OR</sub> = <span id="s_or">0</span></div>
+                <div>出力 h<sub>OR</sub> = <span id="h_or" class="bit">0</span></div>
+              </div>
+            </div>
+            <div class="neuron-card">
+              <h3>NAND</h3>
+              <div class="weights">\\( y = \text{step}(-x_1 - x_2 + 1.5) \\)</div>
+              <div class="calc">
+                <div>総入力 s<sub>NAND</sub> = <span id="s_nand">0</span></div>
+                <div>出力 h<sub>NAND</sub> = <span id="h_nand" class="bit">0</span></div>
+              </div>
+            </div>
+          </details>
+
+          <details aria-expanded="false">
+            <summary class="accordion-summary secondary">第2層：AND（最終出力）</summary>
+            <div class="layer output">
+              <div class="neuron-card">
+              <h3>AND（出力）</h3>
+              <div class="weights">\\( y = \text{step}(h_{\text{OR}} + h_{\text{NAND}} - 1.5) \\)</div>
+              <div class="calc">
+                <div>総入力 s<sub>AND</sub> = <span id="s_and">0</span></div>
+                <div>出力 XOR = <span id="y_xor" class="bit big">0</span></div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <details class="truth">
+        <summary>真理値表（XOR 2層）</summary>
+        <table>
+          <thead><tr><th>x1</th><th>x2</th><th>OR</th><th>NAND</th><th>AND</th><th>XOR</th></tr></thead>
+          <tbody id="xor_truth_body"></tbody>
+        </table>
+      </details>
+    </section>
+
+    <!-- 4) OTP ANALOGY -->
+    <section id="otp" class="tab">
+      <h2>パーセプトロンOTP（XORアナロジー）</h2>
+      <p>
+        パーセプトロンXORを用いてOTPを再現します。
+      </p>
+
+      <div class="otp-form">
+        <h3 id="inputTitle">入力</h3>
+        <div class="mode-selection">
+          <label class="mode-label">
+            <input type="radio" name="otpMode" value="encrypt" checked>
+            暗号化
+          </label>
+          <label class="mode-label">
+            <input type="radio" name="otpMode" value="decrypt">
+            復号
+          </label>
+        </div>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label for="pt" id="inputLabel1">平文P（UTF-8）</label>
+            <textarea id="pt" rows="3" placeholder="例) HELLO"></textarea>
+          </div>
+          <div class="hex-display">
+            <label>HEX表示</label>
+            <input id="ptHex" readonly placeholder="バイト列が16進表示されます" />
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="key">鍵K（同じ長さ）</label>
+            <textarea id="key" rows="3" placeholder="例) XMCKL"></textarea>
+          </div>
+          <div class="hex-display">
+            <label>HEX表示</label>
+            <input id="keyHex" readonly placeholder="バイト列が16進表示されます" />
+          </div>
+        </div>
+        <div class="controls">
+          <button id="btnExecute">暗号化（C = P ⊕ K）</button>
+          <div class="button-spacer"></div>
+          <button id="btnSample">サンプル投入</button>
+        </div>
+        <p class="note">
+          ※ OTPの完全秘匿は鍵（K）が <strong>真に乱数・平文と同長・使い回しなし・秘匿</strong> の場合に限られます。  
+          本ツールは教育用デモです。
+        </p>
+      </div>
+
+      <div class="otp-result">
+        <h3 id="resultTitle">出力</h3>
+        <div class="input-row">
+          <div class="input-group">
+            <label id="outputLabel1">暗号文テキスト</label>
+            <textarea id="outText" rows="3" readonly></textarea>
+          </div>
+          <div class="hex-display">
+            <label>HEX表示</label>
+            <input id="outHex" readonly placeholder="結果が16進表示されます" />
+          </div>
+        </div>
+        <p id="nonPrintableWarning" class="warning-note" style="display:none;">
+          ※ 結果に印字できない文字が含まれています。正確な内容はHEX表示をご確認ください。
+        </p>
+
+        <details open aria-expanded="true">
+          <summary>ビット単位の可視化（各バイト MSB→LSB）</summary>
+          <div id="bitviz"></div>
+        </details>
+
+        <details aria-expanded="false">
+          <summary>性能比較ベンチマーク</summary>
+          <div class="benchmark-info">
+            <h4>テスト内容</h4>
+            <p>10,000バイトのランダムデータに対してXOR演算を実行し、処理時間を比較します：</p>
+            <ul>
+              <li><strong>Native XOR</strong>: JavaScriptの標準XOR演算子（<code>a ^ b</code>）</li>
+              <li><strong>Perceptron XOR</strong>: パーセプトロンを使ったビット単位のXOR演算</li>
+            </ul>
+            <h4>結果の見方</h4>
+            <ul>
+              <li><strong>処理時間</strong>: パーセプトロンXORは教育目的のため、標準XORより大幅に遅くなります</li>
+              <li><strong>結果の一致</strong>: 両方の手法で同じ結果が得られることを確認します</li>
+              <li><strong>教育的意義</strong>: XOR演算の内部仕組みをパーセプトロンで可視化・理解できます</li>
+            </ul>
+            <div class="benchmark-controls">
+              <button id="btnBench" class="benchmark-btn">ベンチマークを実行</button>
+            </div>
+          </div>
+          <pre id="benchlog" class="benchlog"></pre>
+        </details>
+      </div>
+    </section>
+
+        <!-- 5) GLOSSARY -->
+    <section id="glossary" class="tab">
+      <h2>用語集</h2>
+      
+      <div class="glossary-controls">
+        <input type="text" id="glossarySearch" placeholder="用語を検索..." class="glossary-search">
+        <div class="category-filter">
+          <button class="filter-btn active" data-category="all">すべて</button>
+          <button class="filter-btn" data-category="crypto">暗号</button>
+          <button class="filter-btn" data-category="logic">論理</button>
+          <button class="filter-btn" data-category="ml">機械学習</button>
+          <button class="filter-btn" data-category="bit">CS基礎</button>
+        </div>
+      </div>
+
+      <div class="glossary-grid" id="glossaryGrid">
+        <!-- 用語集はJavaScriptでdata/words.jsonから動的に読み込まれます -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer">
+      🔗 GitHubリポジトリはこちら（ <a href="https://github.com/ipusiron/perceptron-otp-visualizer" target="_blank" rel="noopener noreferrer">ipusiron/perceptron-otp-visualizer</a> ）
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

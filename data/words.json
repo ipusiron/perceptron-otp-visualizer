@@ -1,0 +1,165 @@
+{
+  "glossary": [
+    {
+      "id": "otp",
+      "term": "OTP（One-Time Pad, ワンタイムパッド）",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "平文と同じ長さの乱数鍵を用いて XOR を行う暗号方式。完全秘匿性を持つが、鍵管理が実用上困難。<br/>学習用には <strong>OTP Animation</strong> という可視化ツールがあります。<br/><a href=\"https://ipusiron.github.io/otp-animation/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"ext-btn\">OTP Animation を開く <span class=\"ext-icon\">🔗</span></a>"
+    },
+    {
+      "id": "perfect-secrecy",
+      "term": "完全秘匿（Perfect Secrecy）",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "暗号文から平文に関する情報が一切得られない状態。シャノンが定義。OTPがその代表例。<br/>条件は「鍵が真に乱数」「平文と同じ長さ」「一度しか使わない」「秘匿される」。"
+    },
+    {
+      "id": "cryptographic-strength",
+      "term": "暗号強度",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "攻撃者が暗号を破るために必要な計算量やコストの大きさ。OTPは理論的に最大だが、実用暗号は鍵管理・性能とのトレードオフがある。"
+    },
+    {
+      "id": "lsb",
+      "term": "LSB（Least Significant Bit）",
+      "category": "bit",
+      "categoryLabel": "CS基礎",
+      "definition": "最下位ビット。ビット列の右端。バイナリ表現の中で、重みがもっとも小さいビット。"
+    },
+    {
+      "id": "msb",
+      "term": "MSB（Most Significant Bit）",
+      "category": "bit",
+      "categoryLabel": "CS基礎",
+      "definition": "最上位ビット。ビット列の左端。バイナリ表現の中で、重みがもっとも大きいビット。"
+    },
+    {
+      "id": "truth-table",
+      "term": "真理値表",
+      "category": "logic",
+      "categoryLabel": "論理",
+      "definition": "入力値の全組合せに対する論理式の出力結果を表形式で示したもの。"
+    },
+    {
+      "id": "logic-gate",
+      "term": "論理ゲート（Logic Gate）",
+      "category": "logic",
+      "categoryLabel": "論理",
+      "definition": "0/1の入力に基づき、定義された論理演算を行う基本回路。AND, OR, NOT, NAND, XOR など。"
+    },
+    {
+      "id": "neuron",
+      "term": "ニューロン（Neuron）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "生物学的神経細胞。複数の入力信号を受け取り、一定のしきい値を超えると出力信号を発する。<br/>人工知能における「人工ニューロン」のモデルとなった。"
+    },
+    {
+      "id": "perceptron",
+      "term": "パーセプトロン（Perceptron）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "最も基本的な人工ニューロンモデル。生物のニューロンを模倣し、複数の入力値と重みの線形和にしきい値（活性化関数）を適用して0/1の出力を返す。<br/>単層では線形分離可能な問題しか扱えず、XORのような非線形問題には多層化が必要。"
+    },
+    {
+      "id": "artificial-intelligence",
+      "term": "人工知能（AI: Artificial Intelligence）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "人間の知能を機械で模倣・実現する技術分野。推論、学習、認識、自然言語処理などを含む。<br/>機械学習やディープラーニングは人工知能の一部分野。"
+    },
+    {
+      "id": "machine-learning",
+      "term": "機械学習（ML: Machine Learning）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "データから自動的にパターンを学習し、予測や分類を行う人工知能の手法。<br/>パーセプトロン、決定木、サポートベクターマシンなど様々なアルゴリズムが存在。"
+    },
+    {
+      "id": "deep-learning",
+      "term": "ディープラーニング（深層学習）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "多層ニューラルネットワークを用いた機械学習手法。多数の隠れ層によって複雑な特徴量を自動学習できる。<br/>画像認識、自然言語処理、音声認識などで劇的な性能向上を実現。"
+    },
+    {
+      "id": "linear-separability",
+      "term": "線形分離",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "入力空間を直線や平面で分けられる性質。XOR問題は線形分離不可能な例として有名。"
+    },
+    {
+      "id": "step-function",
+      "term": "ステップ関数（Heaviside step function）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "入力がしきい値以上なら 1、未満なら 0 を返す関数。パーセプトロンの出力に用いられる。"
+    },
+    {
+      "id": "activation-function",
+      "term": "活性化関数（Activation Function）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "ニューラルネットワークにおいて入力の総和を出力に変換する関数。ステップ関数やシグモイド関数などがある。"
+    },
+    {
+      "id": "multilayer-perceptron",
+      "term": "多層パーセプトロン（MLP: Multi-Layer Perceptron）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "複数のパーセプトロンを層状に接続したモデル。単層では表現できない非線形問題を扱える。"
+    },
+    {
+      "id": "key-management",
+      "term": "鍵管理（Key Management）",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "鍵の生成・配布・保存・破棄に関する方法論。OTPは安全だが、鍵管理が実用上の最大の課題。"
+    },
+    {
+      "id": "randomness",
+      "term": "乱数（Randomness）",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "暗号において不可欠な要素。真にランダムな鍵と擬似乱数（PRNG）とを区別することが重要。"
+    },
+    {
+      "id": "prng",
+      "term": "擬似乱数生成器（PRNG）",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "決定論的アルゴリズムでランダムに見える数列を生成する仕組み。セキュアPRNGは暗号利用に不可欠。"
+    },
+    {
+      "id": "shannon",
+      "term": "シャノン（Claude Shannon）",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "情報理論の父。「完全秘匿性」の定義を与えた。OTPが理論的に安全であることを示した。"
+    },
+    {
+      "id": "boolean-algebra",
+      "term": "ブール代数（Boolean Algebra）",
+      "category": "logic",
+      "categoryLabel": "論理",
+      "definition": "論理演算を代数的に扱う体系。論理ゲートや真理値表の基礎となる数学。"
+    },
+    {
+      "id": "linearity",
+      "term": "線形性（Linearity）",
+      "category": "ml",
+      "categoryLabel": "機械学習",
+      "definition": "入力の重み付け和で出力が決まる性質。パーセプトロンは線形モデルであり、非線形問題には不十分。"
+    },
+    {
+      "id": "cryptographic-security",
+      "term": "暗号学的安全性（Cryptographic Security）",
+      "category": "crypto",
+      "categoryLabel": "暗号",
+      "definition": "数学的困難性に基づいた安全性。OTPのような情報理論的安全性とは区別される。"
+    }
+  ]
+}
