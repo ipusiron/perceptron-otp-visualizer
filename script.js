@@ -131,7 +131,7 @@ function updateGateDisplay(gateType, pattern, result, row) {
     const z = $('#value-z', card);
     
     if(a1) a1.textContent = `a=${pattern[0]}`;
-    if(a2) a2.textContent = `a=${pattern[1]}`;
+    if(a2) a2.textContent = `a=${pattern[0]}`;
     if(z) z.textContent = `z=${result}`;
   }
   
@@ -190,32 +190,323 @@ function updateGateDisplay(gateType, pattern, result, row) {
 // 2) PERCEPTRON GATES
 // -----------------------------------------------------
 const pg_a = $('#pg_a'), pg_b = $('#pg_b');
-const pg_not_s = $('#pg_not_s'), pg_not_y = $('#pg_not_y');
-const pg_and_s = $('#pg_and_s'), pg_and_y = $('#pg_and_y');
-const pg_or_s  = $('#pg_or_s'),  pg_or_y  = $('#pg_or_y');
-const pg_nand_s= $('#pg_nand_s'),pg_nand_y= $('#pg_nand_y');
-const pgTruthBtn = $('#pgTruthBtn'), pgTruthBody = $('#pg_truth_body');
+const pgTruthBody = $('#pg_truth_body');
 
-function updatePG(){
+// New element IDs for individual gate visualizations
+const pNotSum = $('#p-not-sum'), pNotOutput = $('#p-not-output');
+const pAndSum = $('#p-and-sum'), pAndOutput = $('#p-and-output');
+const pOrSum = $('#p-or-sum'), pOrOutput = $('#p-or-output');
+const pNandSum = $('#p-nand-sum'), pNandOutput = $('#p-nand-output');
+
+function updatePerceptronGates(){
   const a = parseInt(pg_a.value,10), b = parseInt(pg_b.value,10);
 
+  // Update NOT gate
   const n = P_NOT(a);
-  pg_not_s.textContent = n.s.toFixed(1); setBit(pg_not_y, n.y);
+  if(pNotSum) pNotSum.textContent = `s=${n.s.toFixed(1)}`;
+  if(pNotOutput) pNotOutput.textContent = `z=${n.y}`;
 
+  // Update AND gate
   const and = P_AND(a,b);
-  pg_and_s.textContent = and.s.toFixed(1); setBit(pg_and_y, and.y);
+  if(pAndSum) pAndSum.textContent = `s=${and.s.toFixed(1)}`;
+  if(pAndOutput) pAndOutput.textContent = `z=${and.y}`;
 
+  // Update OR gate
   const o = P_OR(a,b);
-  pg_or_s.textContent = o.s.toFixed(1); setBit(pg_or_y, o.y);
+  if(pOrSum) pOrSum.textContent = `s=${o.s.toFixed(1)}`;
+  if(pOrOutput) pOrOutput.textContent = `z=${o.y}`;
 
+  // Update NAND gate
   const nd = P_NAND(a,b);
-  pg_nand_s.textContent = nd.s.toFixed(1); setBit(pg_nand_y, nd.y);
+  if(pNandSum) pNandSum.textContent = `s=${nd.s.toFixed(1)}`;
+  if(pNandOutput) pNandOutput.textContent = `z=${nd.y}`;
   
-  // 真理値表を自動更新
+  // Update interactive truth tables highlighting
+  updatePerceptronTruthTables(a, b);
+  
+  // Update summary truth table
   renderPGTruth();
 }
-[pg_a, pg_b].forEach(el=>el.addEventListener('change', updatePG));
-updatePG();
+
+function updatePerceptronTruthTables(a, b) {
+  // Update P-NOT truth table highlighting and diagram values
+  const pNotTable = $('[data-gate="p-not"]');
+  if (pNotTable) {
+    const rows = pNotTable.querySelectorAll('tbody tr');
+    rows.forEach(row => row.classList.remove('highlighted'));
+    
+    const targetPattern = `${a}`;
+    const targetRow = pNotTable.querySelector(`[data-pattern="${targetPattern}"]`);
+    if (targetRow) {
+      targetRow.classList.add('highlighted');
+      updatePerceptronDiagramValues('p-not', a, null);
+    }
+  }
+
+  // Update P-AND truth table highlighting and diagram values
+  const pAndTable = $('[data-gate="p-and"]');
+  if (pAndTable) {
+    const rows = pAndTable.querySelectorAll('tbody tr');
+    rows.forEach(row => row.classList.remove('highlighted'));
+    
+    const targetPattern = `${a},${b}`;
+    const targetRow = pAndTable.querySelector(`[data-pattern="${targetPattern}"]`);
+    if (targetRow) {
+      targetRow.classList.add('highlighted');
+      updatePerceptronDiagramValues('p-and', a, b);
+    }
+  }
+
+  // Update P-OR truth table highlighting and diagram values
+  const pOrTable = $('[data-gate="p-or"]');
+  if (pOrTable) {
+    const rows = pOrTable.querySelectorAll('tbody tr');
+    rows.forEach(row => row.classList.remove('highlighted'));
+    
+    const targetPattern = `${a},${b}`;
+    const targetRow = pOrTable.querySelector(`[data-pattern="${targetPattern}"]`);
+    if (targetRow) {
+      targetRow.classList.add('highlighted');
+      updatePerceptronDiagramValues('p-or', a, b);
+    }
+  }
+
+  // Update P-NAND truth table highlighting and diagram values
+  const pNandTable = $('[data-gate="p-nand"]');
+  if (pNandTable) {
+    const rows = pNandTable.querySelectorAll('tbody tr');
+    rows.forEach(row => row.classList.remove('highlighted'));
+    
+    const targetPattern = `${a},${b}`;
+    const targetRow = pNandTable.querySelector(`[data-pattern="${targetPattern}"]`);
+    if (targetRow) {
+      targetRow.classList.add('highlighted');
+      updatePerceptronDiagramValues('p-nand', a, b);
+    }
+  }
+}
+
+function updatePerceptronDiagramValues(gateType, a, b) {
+  if (gateType === 'p-not') {
+    const n = P_NOT(a);
+    const inputA = $('#p-not-value-a');
+    const sumEl = $('#p-not-sum');
+    const outputEl = $('#p-not-output');
+    const valueZ = $('#p-not-value-z');
+    
+    if (inputA) inputA.textContent = `a=${a}`;
+    if (sumEl) sumEl.textContent = `s=${n.s.toFixed(1)}`;
+    if (outputEl) outputEl.textContent = `z=${n.y}`;
+    if (valueZ) valueZ.textContent = `z=${n.y}`;
+  }
+  
+  if (gateType === 'p-and') {
+    const and = P_AND(a, b);
+    const inputA = $('#p-and-value-a');
+    const inputB = $('#p-and-value-b');
+    const sumEl = $('#p-and-sum');
+    const outputEl = $('#p-and-output');
+    const valueZ = $('#p-and-value-z');
+    
+    if (inputA) inputA.textContent = `a=${a}`;
+    if (inputB) inputB.textContent = `b=${b}`;
+    if (sumEl) sumEl.textContent = `s=${and.s.toFixed(1)}`;
+    if (outputEl) outputEl.textContent = `z=${and.y}`;
+    if (valueZ) valueZ.textContent = `z=${and.y}`;
+  }
+  
+  if (gateType === 'p-or') {
+    const or = P_OR(a, b);
+    const inputA = $('#p-or-value-a');
+    const inputB = $('#p-or-value-b');
+    const sumEl = $('#p-or-sum');
+    const outputEl = $('#p-or-output');
+    const valueZ = $('#p-or-value-z');
+    
+    if (inputA) inputA.textContent = `a=${a}`;
+    if (inputB) inputB.textContent = `b=${b}`;
+    if (sumEl) sumEl.textContent = `s=${or.s.toFixed(1)}`;
+    if (outputEl) outputEl.textContent = `z=${or.y}`;
+    if (valueZ) valueZ.textContent = `z=${or.y}`;
+  }
+  
+  if (gateType === 'p-nand') {
+    const nand = P_NAND(a, b);
+    const inputA = $('#p-nand-value-a');
+    const inputB = $('#p-nand-value-b');
+    const sumEl = $('#p-nand-sum');
+    const outputEl = $('#p-nand-output');
+    const valueZ = $('#p-nand-value-z');
+    
+    if (inputA) inputA.textContent = `a=${a}`;
+    if (inputB) inputB.textContent = `b=${b}`;
+    if (sumEl) sumEl.textContent = `s=${nand.s.toFixed(1)}`;
+    if (outputEl) outputEl.textContent = `z=${nand.y}`;
+    if (valueZ) valueZ.textContent = `z=${nand.y}`;
+  }
+}
+
+[pg_a, pg_b].forEach(el => {
+  if (el) {
+    el.addEventListener('change', updatePerceptronGates);
+  }
+});
+if (pg_a && pg_b) {
+  updatePerceptronGates();
+}
+
+// Add click event handlers for perceptron truth table rows
+function addPerceptronTableClickHandlers() {
+  // P-NOT table click handler
+  const pNotTable = $('[data-gate="p-not"]');
+  if (pNotTable) {
+    const rows = pNotTable.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const pattern = row.getAttribute('data-pattern');
+        const a = parseInt(pattern, 10);
+        
+        // Remove highlighting from all rows
+        rows.forEach(r => r.classList.remove('highlighted'));
+        row.classList.add('highlighted');
+        
+        // Update diagram values
+        updatePerceptronDiagramValues('p-not', a, null);
+      });
+    });
+  }
+
+  // P-AND table click handler
+  const pAndTable = $('[data-gate="p-and"]');
+  if (pAndTable) {
+    const rows = pAndTable.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const pattern = row.getAttribute('data-pattern').split(',');
+        const a = parseInt(pattern[0], 10);
+        const b = parseInt(pattern[1], 10);
+        
+        // Remove highlighting from all rows
+        rows.forEach(r => r.classList.remove('highlighted'));
+        row.classList.add('highlighted');
+        
+        // Update diagram values
+        updatePerceptronDiagramValues('p-and', a, b);
+      });
+    });
+  }
+
+  // P-OR table click handler
+  const pOrTable = $('[data-gate="p-or"]');
+  if (pOrTable) {
+    const rows = pOrTable.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const pattern = row.getAttribute('data-pattern').split(',');
+        const a = parseInt(pattern[0], 10);
+        const b = parseInt(pattern[1], 10);
+        
+        // Remove highlighting from all rows
+        rows.forEach(r => r.classList.remove('highlighted'));
+        row.classList.add('highlighted');
+        
+        // Update diagram values
+        updatePerceptronDiagramValues('p-or', a, b);
+      });
+    });
+  }
+
+  // P-NAND table click handler
+  const pNandTable = $('[data-gate="p-nand"]');
+  if (pNandTable) {
+    const rows = pNandTable.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const pattern = row.getAttribute('data-pattern').split(',');
+        const a = parseInt(pattern[0], 10);
+        const b = parseInt(pattern[1], 10);
+        
+        // Remove highlighting from all rows
+        rows.forEach(r => r.classList.remove('highlighted'));
+        row.classList.add('highlighted');
+        
+        // Update diagram values
+        updatePerceptronDiagramValues('p-nand', a, b);
+      });
+    });
+  }
+}
+
+// Initialize click handlers after DOM is loaded
+addPerceptronTableClickHandlers();
+
+// Add click event handler for MLP XOR table
+function addMLPXORTableClickHandler() {
+  const mlpXorTable = $('[data-gate="mlp-xor"]');
+  if (mlpXorTable) {
+    const rows = mlpXorTable.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const pattern = row.getAttribute('data-pattern').split(',');
+        const a = parseInt(pattern[0], 10);
+        const b = parseInt(pattern[1], 10);
+        const orResult = parseInt(row.getAttribute('data-or'), 10);
+        const nandResult = parseInt(row.getAttribute('data-nand'), 10);
+        const xorResult = parseInt(row.getAttribute('data-result'), 10);
+        
+        // Remove highlighting from all rows
+        rows.forEach(r => r.classList.remove('highlighted'));
+        row.classList.add('highlighted');
+        
+        // Update MLP XOR diagram values
+        updateMLPXORValues(a, b, orResult, nandResult, xorResult);
+      });
+    });
+  }
+}
+
+function updateMLPXORValues(a, b, orResult, nandResult, xorResult) {
+  // Calculate intermediate values using perceptron functions
+  const orCalc = OR_unit(a, b);
+  const nandCalc = NAND_unit(a, b);
+  const andCalc = AND_unit(orResult, nandResult);
+  
+  // Update input values
+  const inputA = $('#mlp-xor-value-a');
+  const inputB = $('#mlp-xor-value-b');
+  if (inputA) inputA.textContent = `a=${a}`;
+  if (inputB) inputB.textContent = `b=${b}`;
+  
+  // Update intermediate values (Layer 1)
+  const orSum = $('#mlp-or-sum');
+  const orOutput = $('#mlp-or-output');
+  const nandSum = $('#mlp-nand-sum');
+  const nandOutput = $('#mlp-nand-output');
+  
+  if (orSum) orSum.textContent = `s1=${orCalc.s.toFixed(1)}`;
+  if (orOutput) orOutput.textContent = `h1=${orResult}`;
+  if (nandSum) nandSum.textContent = `s2=${nandCalc.s.toFixed(1)}`;
+  if (nandOutput) nandOutput.textContent = `h2=${nandResult}`;
+  
+  // Update final layer (Layer 2)
+  const andSum = $('#mlp-and-sum');
+  const andOutput = $('#mlp-and-output');
+  
+  if (andSum) andSum.textContent = `s3=${andCalc.s.toFixed(1)}`;
+  if (andOutput) andOutput.textContent = `z=${xorResult}`;
+  
+  // Update gate values display
+  const valueOR = $('#mlp-xor-value-or');
+  const valueNAND = $('#mlp-xor-value-nand');
+  const valueZ = $('#mlp-xor-value-z');
+  
+  if (valueOR) valueOR.textContent = `OR=${orResult}`;
+  if (valueNAND) valueNAND.textContent = `NAND=${nandResult}`;
+  if (valueZ) valueZ.textContent = `XOR=${xorResult}`;
+}
+
+// Initialize MLP XOR click handler
+addMLPXORTableClickHandler();
 
 function renderPGTruth(){
   const rows = [];
@@ -232,7 +523,6 @@ function renderPGTruth(){
   }
   pgTruthBody.innerHTML = rows.join('');
 }
-pgTruthBtn.addEventListener('click', renderPGTruth);
 
 // -----------------------------------------------------
 // 3) PERCEPTRON XOR (2-layer)
@@ -257,8 +547,14 @@ function updateXOR(){
   // 真理値表を自動更新
   renderXORTruth();
 }
-[elX1, elX2].forEach(el=>el.addEventListener('change', updateXOR));
-updateXOR();
+[elX1, elX2].forEach(el => {
+  if (el) {
+    el.addEventListener('change', updateXOR);
+  }
+});
+if (elX1 && elX2) {
+  updateXOR();
+}
 
 function renderXORTruth(){
   const rows = [];
@@ -270,7 +566,14 @@ function renderXORTruth(){
   }
   xorTruthBody.innerHTML = rows.join('');
 }
-xorTruthBtn.addEventListener('click', renderXORTruth);
+if (xorTruthBtn) {
+  xorTruthBtn.addEventListener('click', renderXORTruth);
+}
+
+// Initialize XOR truth table on load
+if (xorTruthBody) {
+  renderXORTruth();
+}
 
 // -----------------------------------------------------
 // 4) OTP ANALOGY

@@ -442,6 +442,30 @@ details[open] summary::before {
   font-weight: 700;
 }
 
+.circuit-label.small {
+  font-size: 9px;
+}
+
+.circuit-label.weight {
+  font-size: 10px;
+  fill: var(--accent);
+  font-weight: 700;
+}
+
+.circuit-label.input-value {
+  font-size: 10px;
+  fill: var(--primary);
+  font-weight: 700;
+}
+
+/* ===== Perceptron Diagram Styles ===== */
+.perceptron-diagram {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 8px;
+}
+
 /* ===== NAND Reference Section ===== */
 .nand-reference {
   background: var(--panel);

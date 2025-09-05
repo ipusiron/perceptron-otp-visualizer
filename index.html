@@ -406,138 +406,405 @@
 
     <!-- 2) PERCEPTRON GATES -->
     <section id="gates" class="tab">
-      <h2>パーセプトロンでゲート（単層）</h2>
+      <h2>パーセプトロンで基本ゲートをつくる</h2>
       <p>
-        固定重み＋しきい値のステップ関数  
-        \\( \text{step}(z) = \begin{cases}1 & z \ge 0 \\ 0 & z < 0\end{cases} \\)  
-        でNOT/AND/OR/NANDを再現します。
+        単層パーセプトロンで基本論理ゲート（NOT/AND/OR/NAND）を実現できます。<br/>
+        パーセプトロンは、活性化関数を使用します。<br />
+        今回の活性化関数はstep関数であり、重み付き入力の総和がしきい値以上なら1、未満なら0を出力します。
       </p>
-
-      <div class="input-panel">
-        <label><span>a</span>
-          <select id="pg_a"><option>0</option><option>1</option></select>
-        </label>
-        <label><span>b</span>
-          <select id="pg_b"><option>0</option><option>1</option></select>
-        </label>
-        <button id="pgTruthBtn">真理値表</button>
-      </div>
-
+      
       <div class="io-panel">
         <div class="network">
           <details open aria-expanded="true">
-            <summary class="accordion-summary">パーセプトロン ゲート一覧</summary>
-          <div class="layer">
+            <summary class="accordion-summary">1. 基本パーセプトロンゲート</summary>
+            <div class="layer">
+
             <div class="neuron-card">
-              <h3>NOT</h3>
-              <div class="weights">\\( y = \text{step}(-1 \cdot a + 0.5) \\)</div>
-              <div class="calc">
-                <div>総入力 s = <span id="pg_not_s">0</span></div>
-                <div>出力 y = <span id="pg_not_y" class="bit">0</span></div>
+              <h3>NOTゲート</h3>
+              <div class="explanation">単一入力の反転を行います。重みを負、バイアスを正にすることで実現。<br/>NOT(a) = step(-a + 0.5)</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="p-not">
+                  <thead><tr><th>a</th><th>-a</th><th>-a + 0.5</th><th>step</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0" data-result="1"><td>0</td><td>0</td><td>0.5</td><td>1</td></tr>
+                    <tr data-pattern="1" data-result="0"><td>1</td><td>-1</td><td>-0.5</td><td>0</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="perceptron-diagram" viewBox="0 0 200 120" width="200" height="120">
+                    <!-- Input -->
+                    <line x1="20" y1="60" x2="60" y2="60" stroke="var(--text)" stroke-width="2"/>
+                    <text x="10" y="50" class="circuit-label">a</text>
+                    <text x="25" y="50" class="circuit-label weight">-1</text>
+                    
+                    <!-- Perceptron node -->
+                    <circle cx="80" cy="60" r="20" fill="none" stroke="var(--text)" stroke-width="2"/>
+                    <text x="73" y="67" class="circuit-label">Σ</text>
+                    
+                    <!-- Bias -->
+                    <line x1="80" y1="35" x2="80" y2="40" stroke="var(--text)" stroke-width="2"/>
+                    <text x="70" y="30" class="circuit-label weight">+0.5</text>
+                    
+                    <!-- Step function -->
+                    <rect x="110" y="50" width="30" height="20" fill="none" stroke="var(--text)" stroke-width="1"/>
+                    <text x="120" y="63" class="circuit-label small">step</text>
+                    
+                    <!-- Output -->
+                    <line x1="100" y1="60" x2="110" y2="60" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="60" x2="170" y2="60" stroke="var(--text)" stroke-width="2"/>
+                    <text x="175" y="55" class="circuit-label">z</text>
+                    
+                    <!-- Values -->
+                    <text x="85" y="85" class="circuit-label intermediate-label" id="p-not-sum">s=0.5</text>
+                    <text x="145" y="85" class="circuit-label intermediate-label" id="p-not-output">z=1</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="p-not-value-a">a=0</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="p-not-value-z">z=1</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
             <div class="neuron-card">
-              <h3>AND</h3>
-              <div class="weights">\\( y = \text{step}(1 \cdot a + 1 \cdot b - 1.5) \\)</div>
-              <div class="calc">
-                <div>総入力 s = <span id="pg_and_s">0</span></div>
-                <div>出力 y = <span id="pg_and_y" class="bit">0</span></div>
+              <h3>ANDゲート</h3>
+              <div class="explanation">2つの入力が共に1のときのみ1を出力。重みを正、閾値を1.5に設定。<br/>AND(a, b) = step(a + b - 1.5)</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="p-and">
+                  <thead><tr><th>a</th><th>b</th><th>a + b</th><th>a + b - 1.5</th><th>step</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-result="0"><td>0</td><td>0</td><td>0</td><td>-1.5</td><td>0</td></tr>
+                    <tr data-pattern="0,1" data-result="0"><td>0</td><td>1</td><td>1</td><td>-0.5</td><td>0</td></tr>
+                    <tr data-pattern="1,0" data-result="0"><td>1</td><td>0</td><td>1</td><td>-0.5</td><td>0</td></tr>
+                    <tr data-pattern="1,1" data-result="1"><td>1</td><td>1</td><td>2</td><td>0.5</td><td>1</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="perceptron-diagram" viewBox="0 0 200 140" width="200" height="140">
+                    <!-- Inputs -->
+                    <line x1="20" y1="50" x2="60" y2="60" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="20" y1="90" x2="60" y2="80" stroke="var(--text)" stroke-width="2"/>
+                    <text x="10" y="45" class="circuit-label">a</text>
+                    <text x="10" y="95" class="circuit-label">b</text>
+                    <text x="25" y="40" class="circuit-label weight">+1</text>
+                    <text x="25" y="105" class="circuit-label weight">+1</text>
+                    
+                    <!-- Perceptron node -->
+                    <circle cx="80" cy="70" r="20" fill="none" stroke="var(--text)" stroke-width="2"/>
+                    <text x="73" y="77" class="circuit-label">Σ</text>
+                    
+                    <!-- Bias -->
+                    <line x1="80" y1="45" x2="80" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <text x="65" y="40" class="circuit-label weight">-1.5</text>
+                    
+                    <!-- Step function -->
+                    <rect x="110" y="60" width="30" height="20" fill="none" stroke="var(--text)" stroke-width="1"/>
+                    <text x="120" y="73" class="circuit-label small">step</text>
+                    
+                    <!-- Output -->
+                    <line x1="100" y1="70" x2="110" y2="70" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="70" x2="170" y2="70" stroke="var(--text)" stroke-width="2"/>
+                    <text x="175" y="65" class="circuit-label">z</text>
+                    
+                    <!-- Values -->
+                    <text x="85" y="105" class="circuit-label intermediate-label" id="p-and-sum">s=-1.5</text>
+                    <text x="145" y="105" class="circuit-label intermediate-label" id="p-and-output">z=0</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="p-and-value-a">a=0</span>
+                      <span id="p-and-value-b">b=0</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="p-and-value-z">z=0</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
             <div class="neuron-card">
-              <h3>OR</h3>
-              <div class="weights">\\( y = \text{step}(1 \cdot a + 1 \cdot b - 0.5) \\)</div>
-              <div class="calc">
-                <div>総入力 s = <span id="pg_or_s">0</span></div>
-                <div>出力 y = <span id="pg_or_y" class="bit">0</span></div>
+              <h3>ORゲート</h3>
+              <div class="explanation">いずれかの入力が1のとき1を出力。重みを正、閾値を0.5に設定。<br/>OR(a, b) = step(a + b - 0.5)</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="p-or">
+                  <thead><tr><th>a</th><th>b</th><th>a + b</th><th>a + b - 0.5</th><th>step</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-result="0"><td>0</td><td>0</td><td>0</td><td>-0.5</td><td>0</td></tr>
+                    <tr data-pattern="0,1" data-result="1"><td>0</td><td>1</td><td>1</td><td>0.5</td><td>1</td></tr>
+                    <tr data-pattern="1,0" data-result="1"><td>1</td><td>0</td><td>1</td><td>0.5</td><td>1</td></tr>
+                    <tr data-pattern="1,1" data-result="1"><td>1</td><td>1</td><td>2</td><td>1.5</td><td>1</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="perceptron-diagram" viewBox="0 0 200 140" width="200" height="140">
+                    <!-- Inputs -->
+                    <line x1="20" y1="50" x2="60" y2="60" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="20" y1="90" x2="60" y2="80" stroke="var(--text)" stroke-width="2"/>
+                    <text x="10" y="45" class="circuit-label">a</text>
+                    <text x="10" y="95" class="circuit-label">b</text>
+                    <text x="25" y="40" class="circuit-label weight">+1</text>
+                    <text x="25" y="105" class="circuit-label weight">+1</text>
+                    
+                    <!-- Perceptron node -->
+                    <circle cx="80" cy="70" r="20" fill="none" stroke="var(--text)" stroke-width="2"/>
+                    <text x="73" y="77" class="circuit-label">Σ</text>
+                    
+                    <!-- Bias -->
+                    <line x1="80" y1="45" x2="80" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <text x="65" y="40" class="circuit-label weight">-0.5</text>
+                    
+                    <!-- Step function -->
+                    <rect x="110" y="60" width="30" height="20" fill="none" stroke="var(--text)" stroke-width="1"/>
+                    <text x="120" y="73" class="circuit-label small">step</text>
+                    
+                    <!-- Output -->
+                    <line x1="100" y1="70" x2="110" y2="70" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="70" x2="170" y2="70" stroke="var(--text)" stroke-width="2"/>
+                    <text x="175" y="65" class="circuit-label">z</text>
+                    
+                    <!-- Values -->
+                    <text x="85" y="105" class="circuit-label intermediate-label" id="p-or-sum">s=-0.5</text>
+                    <text x="145" y="105" class="circuit-label intermediate-label" id="p-or-output">z=0</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="p-or-value-a">a=0</span>
+                      <span id="p-or-value-b">b=0</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="p-or-value-z">z=0</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
             <div class="neuron-card">
-              <h3>NAND</h3>
-              <div class="weights">\\( y = \text{step}(-1 \cdot a - 1 \cdot b + 1.5) \\)</div>
-              <div class="calc">
-                <div>総入力 s = <span id="pg_nand_s">0</span></div>
-                <div>出力 y = <span id="pg_nand_y" class="bit">0</span></div>
+              <h3>NANDゲート</h3>
+              <div class="explanation">ANDゲートの出力を反転。重みを負、閾値を-1.5に設定。<br/>NAND(a, b) = step(-a - b + 1.5)</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="p-nand">
+                  <thead><tr><th>a</th><th>b</th><th>-a - b</th><th>-a - b + 1.5</th><th>step</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-result="1"><td>0</td><td>0</td><td>0</td><td>1.5</td><td>1</td></tr>
+                    <tr data-pattern="0,1" data-result="1"><td>0</td><td>1</td><td>-1</td><td>0.5</td><td>1</td></tr>
+                    <tr data-pattern="1,0" data-result="1"><td>1</td><td>0</td><td>-1</td><td>0.5</td><td>1</td></tr>
+                    <tr data-pattern="1,1" data-result="0"><td>1</td><td>1</td><td>-2</td><td>-0.5</td><td>0</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="perceptron-diagram" viewBox="0 0 200 140" width="200" height="140">
+                    <!-- Inputs -->
+                    <line x1="20" y1="50" x2="60" y2="60" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="20" y1="90" x2="60" y2="80" stroke="var(--text)" stroke-width="2"/>
+                    <text x="10" y="45" class="circuit-label">a</text>
+                    <text x="10" y="95" class="circuit-label">b</text>
+                    <text x="25" y="40" class="circuit-label weight">-1</text>
+                    <text x="25" y="105" class="circuit-label weight">-1</text>
+                    
+                    <!-- Perceptron node -->
+                    <circle cx="80" cy="70" r="20" fill="none" stroke="var(--text)" stroke-width="2"/>
+                    <text x="73" y="77" class="circuit-label">Σ</text>
+                    
+                    <!-- Bias -->
+                    <line x1="80" y1="45" x2="80" y2="50" stroke="var(--text)" stroke-width="2"/>
+                    <text x="65" y="40" class="circuit-label weight">+1.5</text>
+                    
+                    <!-- Step function -->
+                    <rect x="110" y="60" width="30" height="20" fill="none" stroke="var(--text)" stroke-width="1"/>
+                    <text x="120" y="73" class="circuit-label small">step</text>
+                    
+                    <!-- Output -->
+                    <line x1="100" y1="70" x2="110" y2="70" stroke="var(--text)" stroke-width="2"/>
+                    <line x1="140" y1="70" x2="170" y2="70" stroke="var(--text)" stroke-width="2"/>
+                    <text x="175" y="65" class="circuit-label">z</text>
+                    
+                    <!-- Values -->
+                    <text x="85" y="105" class="circuit-label intermediate-label" id="p-nand-sum">s=1.5</text>
+                    <text x="145" y="105" class="circuit-label intermediate-label" id="p-nand-output">z=1</text>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="p-nand-value-a">a=0</span>
+                      <span id="p-nand-value-b">b=0</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="p-nand-value-z">z=1</span>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </div>
+
             </div>
           </details>
+
+          <details class="truth" aria-expanded="false">
+            <summary class="accordion-summary secondary">各ゲートの真理値表（まとめ）</summary>
+            <table>
+              <thead><tr><th>a</th><th>b</th><th>NOT a</th><th>AND</th><th>OR</th><th>NAND</th></tr></thead>
+              <tbody id="pg_truth_body"></tbody>
+            </table>
+          </details>
+
         </div>
       </div>
-
-      <details class="truth">
-        <summary>真理値表（パーセプトロン単層）</summary>
-        <table>
-          <thead><tr><th>a</th><th>b</th><th>NOT a</th><th>AND</th><th>OR</th><th>NAND</th></tr></thead>
-        <tbody id="pg_truth_body"></tbody>
-        </table>
-      </details>
     </section>
 
     <!-- 3) PERCEPTRON XOR -->
     <section id="xor" class="tab">
-      <h2>パーセプトロンXOR（2層合成）</h2>
+      <h2>パーセプトロンで多層ゲートをつくる</h2>
       <p>
-        XORは線形分離不可能で単層パーセプトロンでは実現できません。  
-        そこでORとNANDを第1層に置き、その出力をANDでまとめることで  
-        \\( \text{XOR}(x_1, x_2) = \text{AND}(\text{OR}(x_1, x_2), \text{NAND}(x_1, x_2)) \\)  
-        が成り立ちます。
-      </p>
+        XORは線形分離不可能で単層パーセプトロンでは実現できません。<br/>
+        多層パーセプトロンでOR、NAND、ANDを組み合わせることで実現します。<br/>
+        より詳細な数学的実装と決定境界の可視化については、関連ノートブックもご覧ください。<br/><br/>
 
-      <div class="input-panel">
-        <label><span>x1</span>
-          <select id="x1"><option>0</option><option>1</option></select>
-        </label>
-        <label><span>x2</span>
-          <select id="x2"><option>0</option><option>1</option></select>
-        </label>
-        <button id="xorTruthBtn">真理値表</button>
-      </div>
+        <a href="https://github.com/ipusiron/perceptron-otp-visualizer/blob/main/notebooks/logic_gate_of_perceptron.ipynb" target="_blank" rel="noopener noreferrer" class="ext-btn">
+          パーセプトロン論理ゲートの詳細実装 <span class="ext-icon">🔗</span>
+        </a>
+      </p>
 
       <div class="io-panel">
         <div class="network">
           <details open aria-expanded="true">
-            <summary class="accordion-summary">第1層：OR と NAND</summary>
+            <summary class="accordion-summary">1. 多層パーセプトロンXOR</summary>
             <div class="layer">
+
             <div class="neuron-card">
-              <h3>OR</h3>
-              <div class="weights">\\( y = \text{step}(x_1 + x_2 - 0.5) \\)</div>
-              <div class="calc">
-                <div>総入力 s<sub>OR</sub> = <span id="s_or">0</span></div>
-                <div>出力 h<sub>OR</sub> = <span id="h_or" class="bit">0</span></div>
+              <h3>XOR多層構成</h3>
+              <div class="explanation">第1層でOR・NANDを計算し、第2層でANDを適用してXORを実現します。<br/>
+              XOR(a, b) = AND(OR(a, b), NAND(a, b))<br/>
+              ※ここで使っているのはそれぞれパーセプトロンゲートです。</div>
+              <div class="gate-visualization">
+                <table class="truth-table interactive-table" data-gate="mlp-xor">
+                  <thead><tr><th>a</th><th>b</th><th>OR(a, b)</th><th>NAND(a, b)</th><th>AND(OR, NAND)</th><th>XOR</th></tr></thead>
+                  <tbody>
+                    <tr data-pattern="0,0" data-or="0" data-nand="1" data-result="0"><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+                    <tr data-pattern="0,1" data-or="1" data-nand="1" data-result="1"><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+                    <tr data-pattern="1,0" data-or="1" data-nand="1" data-result="1"><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+                    <tr data-pattern="1,1" data-or="1" data-nand="0" data-result="0"><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+                  </tbody>
+                </table>
+                <div class="gate-display">
+                  <svg class="perceptron-diagram" viewBox="0 0 400 280" width="400" height="280">
+                    <!-- Input layer -->
+                    <text x="10" y="50" class="circuit-label">a</text>
+                    <text x="10" y="250" class="circuit-label">b</text>
+                    
+                    <!-- Layer 1: OR Perceptron -->
+                    <g class="layer1-or">
+                      <line x1="20" y1="50" x2="60" y2="80" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="20" y1="250" x2="60" y2="100" stroke="var(--text)" stroke-width="2"/>
+                      <text x="35" y="55" class="circuit-label weight">+1</text>
+                      <text x="45" y="105" class="circuit-label weight">+1</text>
+                      
+                      <circle cx="80" cy="90" r="20" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <text x="73" y="97" class="circuit-label">Σ</text>
+                      <text x="95" y="60" class="circuit-label small">OR</text>
+                      
+                      <!-- OR bias -->
+                      <line x1="80" y1="65" x2="80" y2="70" stroke="var(--text)" stroke-width="2"/>
+                      <text x="65" y="60" class="circuit-label weight">-0.5</text>
+                      
+                      <rect x="110" y="80" width="30" height="20" fill="none" stroke="var(--text)" stroke-width="1"/>
+                      <text x="120" y="93" class="circuit-label small">step</text>
+                      
+                      <line x1="100" y1="90" x2="110" y2="90" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="140" y1="90" x2="180" y2="90" stroke="var(--text)" stroke-width="2"/>
+                      
+                      <!-- OR output values -->
+                      <text x="85" y="125" class="circuit-label intermediate-label" id="mlp-or-sum">s1=-0.5</text>
+                      <text x="145" y="125" class="circuit-label intermediate-label" id="mlp-or-output">h1=0</text>
+                    </g>
+                    
+                    <!-- Layer 1: NAND Perceptron -->
+                    <g class="layer1-nand">
+                      <line x1="20" y1="50" x2="60" y2="180" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="20" y1="250" x2="60" y2="200" stroke="var(--text)" stroke-width="2"/>
+                      <text x="18" y="90" class="circuit-label weight">-1</text>
+                      <text x="40" y="235" class="circuit-label weight">-1</text>
+                      
+                      <circle cx="80" cy="190" r="20" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <text x="73" y="197" class="circuit-label">Σ</text>
+                      <text x="95" y="160" class="circuit-label small">NAND</text>
+                      
+                      <!-- NAND bias -->
+                      <line x1="80" y1="165" x2="80" y2="170" stroke="var(--text)" stroke-width="2"/>
+                      <text x="65" y="160" class="circuit-label weight">+1.5</text>
+                      
+                      <rect x="110" y="180" width="30" height="20" fill="none" stroke="var(--text)" stroke-width="1"/>
+                      <text x="120" y="193" class="circuit-label small">step</text>
+                      
+                      <line x1="100" y1="190" x2="110" y2="190" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="140" y1="190" x2="180" y2="190" stroke="var(--text)" stroke-width="2"/>
+                      
+                      <!-- NAND output values -->
+                      <text x="85" y="225" class="circuit-label intermediate-label" id="mlp-nand-sum">s2=1.5</text>
+                      <text x="145" y="225" class="circuit-label intermediate-label" id="mlp-nand-output">h2=1</text>
+                    </g>
+                    
+                    <!-- Layer 2: AND Perceptron -->
+                    <g class="layer2-and">
+                      <line x1="180" y1="90" x2="220" y2="130" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="180" y1="190" x2="220" y2="150" stroke="var(--text)" stroke-width="2"/>
+                      <text x="185" y="85" class="circuit-label weight">+1</text>
+                      <text x="185" y="210" class="circuit-label weight">+1</text>
+                      
+                      <circle cx="240" cy="140" r="20" fill="none" stroke="var(--text)" stroke-width="2"/>
+                      <text x="233" y="147" class="circuit-label">Σ</text>
+                      <text x="255" y="110" class="circuit-label small">AND</text>
+                      
+                      <!-- AND bias -->
+                      <line x1="240" y1="115" x2="240" y2="120" stroke="var(--text)" stroke-width="2"/>
+                      <text x="225" y="110" class="circuit-label weight">-1.5</text>
+                      
+                      <rect x="270" y="130" width="30" height="20" fill="none" stroke="var(--text)" stroke-width="1"/>
+                      <text x="280" y="143" class="circuit-label small">step</text>
+                      
+                      <line x1="260" y1="140" x2="270" y2="140" stroke="var(--text)" stroke-width="2"/>
+                      <line x1="300" y1="140" x2="330" y2="140" stroke="var(--text)" stroke-width="2"/>
+                      <text x="335" y="135" class="circuit-label">z</text>
+                      
+                      <!-- AND output values -->
+                      <text x="245" y="175" class="circuit-label intermediate-label" id="mlp-and-sum">s3=-1.5</text>
+                      <text x="305" y="175" class="circuit-label intermediate-label" id="mlp-and-output">z=0</text>
+                    </g>
+                  </svg>
+                  <div class="gate-values">
+                    <div class="input-values">
+                      <span id="mlp-xor-value-a">a=0</span>
+                      <span id="mlp-xor-value-b">b=0</span>
+                    </div>
+                    <div class="intermediate-value">
+                      <span id="mlp-xor-value-or">OR=0</span>
+                      <span id="mlp-xor-value-nand">NAND=1</span>
+                    </div>
+                    <div class="output-value">
+                      <span id="mlp-xor-value-z">XOR=0</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="neuron-card">
-              <h3>NAND</h3>
-              <div class="weights">\\( y = \text{step}(-x_1 - x_2 + 1.5) \\)</div>
-              <div class="calc">
-                <div>総入力 s<sub>NAND</sub> = <span id="s_nand">0</span></div>
-                <div>出力 h<sub>NAND</sub> = <span id="h_nand" class="bit">0</span></div>
-              </div>
+
             </div>
           </details>
 
-          <details aria-expanded="false">
-            <summary class="accordion-summary secondary">第2層：AND（最終出力）</summary>
-            <div class="layer output">
-              <div class="neuron-card">
-              <h3>AND（出力）</h3>
-              <div class="weights">\\( y = \text{step}(h_{\text{OR}} + h_{\text{NAND}} - 1.5) \\)</div>
-              <div class="calc">
-                <div>総入力 s<sub>AND</sub> = <span id="s_and">0</span></div>
-                <div>出力 XOR = <span id="y_xor" class="bit big">0</span></div>
-              </div>
-            </div>
+          <details class="truth" aria-expanded="false">
+            <summary class="accordion-summary secondary">XOR真理値表（まとめ）</summary>
+            <table>
+              <thead><tr><th>a</th><th>b</th><th>第1層OR</th><th>第1層NAND</th><th>第2層AND</th><th>XOR結果</th></tr></thead>
+              <tbody id="xor_truth_body"></tbody>
+            </table>
           </details>
+
         </div>
       </div>
-
-      <details class="truth">
-        <summary>真理値表（XOR 2層）</summary>
-        <table>
-          <thead><tr><th>x1</th><th>x2</th><th>OR</th><th>NAND</th><th>AND</th><th>XOR</th></tr></thead>
-          <tbody id="xor_truth_body"></tbody>
-        </table>
-      </details>
     </section>
 
     <!-- 4) OTP ANALOGY -->
