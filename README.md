@@ -5,8 +5,8 @@ slug: perceptron-otp-visualizer
 
 title: "Perceptron OTP Visualizer"
 
-subtitle_ja: "パーセプトロン疑似OTPツール"
-subtitle_en: "Perceptron-based Pseudo-OTP Tool"
+subtitle_ja: "パーセプトロンOTP可視化ツール"
+subtitle_en: "Perceptron-based OTP Encryption Visualizer"
 
 description_ja: "NANDゲートの普遍性、パーセプトロンによる論理ゲート実装、多層XOR、OTP暗号をインタラクティブに可視化する教育ツール"
 description_en: "Educational tool visualizing NAND gate universality, perceptron implementations, multi-layer XOR, and OTP encryption through interactive demonstrations"
