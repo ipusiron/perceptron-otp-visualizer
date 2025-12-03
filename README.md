@@ -1,11 +1,39 @@
 <!--
 ---
-title: Perceptron OTP Visualizer
-category: genai
+id: day057
+slug: perceptron-otp-visualizer
+
+title: "Perceptron OTP Visualizer"
+
+subtitle_ja: "パーセプトロン疑似OTPツール"
+subtitle_en: "Perceptron-based Pseudo-OTP Tool"
+
+description_ja: "NANDゲートの普遍性、パーセプトロンによる論理ゲート実装、多層XOR、OTP暗号をインタラクティブに可視化する教育ツール"
+description_en: "Educational tool visualizing NAND gate universality, perceptron implementations, multi-layer XOR, and OTP encryption through interactive demonstrations"
+
+category_ja:
+  - 機械学習
+  - 現代暗号
+category_en:
+  - Machine Learning
+  - Modern Cryptography
+
 difficulty: 3
-description: Educational tool visualizing NAND gate universality, perceptron implementations, multi-layer XOR, and OTP encryption through interactive demonstrations.
-tags: [nand, perceptron, xor, otp, cryptography, education, neural-networks]
-demo: https://ipusiron.github.io/perceptron-otp-visualizer/
+
+tags:
+  - nand
+  - perceptron
+  - xor
+  - otp
+  - cryptography
+  - neural-networks
+  - visualization
+  - education
+
+repo_url: "https://github.com/ipusiron/perceptron-otp-visualizer"
+demo_url: "https://ipusiron.github.io/perceptron-otp-visualizer/"
+
+hub: true
 ---
 -->
 
