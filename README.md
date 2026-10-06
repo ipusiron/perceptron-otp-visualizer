@@ -37,6 +37,8 @@ hub: true
 ---
 -->
 
+[English](README.en.md) · 日本語
+
 # Perceptron OTP Visualizer - パーセプトロンOTP可視化ツール
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/ipusiron/perceptron-otp-visualizer?style=social)
@@ -47,9 +49,9 @@ hub: true
 
 **Day057 - 生成AIで作るセキュリティツール100**
 
-**Perceptron OTP Visualizer**は、論理回路・機械学習・暗号学の橋渡しを目指す教育用可視化ツールです。NANDゲートの普遍性から始まり、パーセプトロンによる論理ゲート実装、多層化によるXOR実現、そしてワンタイムパッド（OTP）暗号までを段階的に学習できます。
+Perceptron OTP Visualizerは、論理回路・機械学習・暗号をひとつながりで学ぶ教育用の可視化ツールです。NANDゲートだけで論理ゲートを組み、同じゲートをパーセプトロン（人工ニューロン）で作り、単層では作れないXORを2層で作ります。最後に、そのXORでワンタイムパッド（OTP）の暗号化と復号をして、ビットごとの計算を見せます。
 
-各ステップでインタラクティブな真理値表、回路図、パーセプトロン図を組み合わせ、抽象的な概念を視覚的に理解できるよう設計されています。
+各タブで、真理値表の行を選ぶと回路図とパーセプトロンの図の値が変わります。計算はすべてブラウザーの中で行い、入力した文字や鍵を外へ送りません。
 
 ---
 
@@ -63,270 +65,339 @@ hub: true
 
 ## 📸 スクリーンショット
 
->![2階層でパーセプトロンXORを作る](assets/screenshot.png)
+>![2層のパーセプトロンでXORを作る](assets/screenshot.png)
 >
->*2階層でパーセプトロンXORを作る*
+>*2層のパーセプトロンでXORを作る（第1層でORとNAND、第2層でAND。a=0、b=1の行）*
+
+>![HELLOを鍵XMCKLで暗号化し、ビットごとの計算を見る](assets/screenshot2.png)
+>
+>*パーセプトロンのXORで、HELLOを鍵XMCKLで暗号化する（暗号文は10 08 0F 07 03。ビットごとの計算）*
+
+>![UTF-8として読めないバイトと制御文字を含む暗号文](assets/screenshot3.png)
+>
+>*caféを鍵kkkkkで暗号化すると、UTF-8として読めないバイトと制御文字を含む。暗号文は16進数で受け渡す*
+
+>![NANDゲート4個でXORを組む](assets/screenshot4.png)
+>
+>*NANDゲート4個でXORを組む（a=1、b=1の行）と、各ゲートの真理値表のまとめ*
+
+>![単層パーセプトロンのAND](assets/screenshot5.png)
+>
+>*単層パーセプトロンのAND（重み+1・+1、バイアス−1.5。a=1、b=1の行）*
+
+>![ダークモードの2層のXOR](assets/screenshot6.png)
+>
+>*ダークモード（2層のXOR、a=1、b=1の行）*
+
+>![用語集を暗号の分野で絞り込む](assets/screenshot7.png)
+>
+>*用語集（暗号の分野で絞り込み）*
 
 ---
 
-## 📝 概要
+## ✨ 機能
 
-本ツールは、**段階的学習**と**インタラクティブ可視化**による教育ツールです。  
-以下の学習段階を提供します：
+### ① NANDユニバーサル
 
-1. **NANDゲートの普遍性**: NOT、AND、OR、XORをNANDゲートのみで構成
-2. **単層パーセプトロン**: 基本論理ゲートをニューロンで実現
-3. **多層パーセプトロン**: 線形分離不可能なXORを多層化で解決
-4. **OTP暗号応用**: XORベースの暗号化・復号化を体験
-5. **用語集**: 関連概念の包括的な説明
+- NANDゲートだけでNOT・AND・OR・XORを組む回路図と真理値表（NANDの個数は1・2・3・4個）
+- 表の行を選ぶと、回路の入力・途中の値・出力が変わる（クリック、またはEnterキー・スペースキー・上下の矢印キー）
+- 各ゲートの真理値表のまとめ
 
----
+### ② パーセプトロンでゲート
 
-## 🎮 機能一覧
+- 単層パーセプトロン（しきい値素子1個）のNOT・AND・OR・NANDを、重み・バイアス・ステップ関数の図で示す
+- 表の各行で、重み付きの和にバイアスを足した値と、ステップ関数の出力を並べる
+- XORだけは単層で作れない理由（線形分離できない）の説明
 
-### タブ1: NANDで基本ゲートをつくる
-- **インタラクティブ回路図**: クリック可能な真理値表と連動する回路可視化
-- **段階的構成**: NOT → AND → OR → XORの順序で複雑性を増加
-- **リアルタイム更新**: 入力パターンに応じて回路の値が動的に変化
+### ③ パーセプトロンXOR
 
-### タブ2: パーセプトロンで基本ゲートをつくる
-- **ニューロン可視化**: 重み、バイアス、活性化関数を含むパーセプトロン図
-- **計算過程表示**: 重み付き入力の総和からstep関数適用までを段階表示
-- **独立インタラクション**: 各ゲートの真理値表を個別にクリック可能
+- 第1層でORとNAND、第2層でANDをとる2層のパーセプトロンの図（各ニューロンの総和と出力の値つき）
+- 真理値表のまとめで、2層の出力とJavaScriptの演算子`^`を並べて比べる
+- Python版の実装と決定境界の図はJupyter Notebook（`notebooks/`）
 
-### タブ3: パーセプトロンで多層ゲートをつくる
-- **多層構造可視化**: 第1層（OR・NAND）と第2層（AND）の2層構成
-- **XOR実現の解説**: 線形分離不可能問題を多層化で解決する過程を明示
-- **詳細実装リンク**: Jupyter Notebookへの外部リンクで補完学習
+### ④ パーセプトロンOTP
 
-### タブ4: パーセプトロンOTP（暗号化）
-- **暗号化・復号化**: UTF-8テキストでの実用的な暗号化体験
-- **ビット単位可視化**: MSB→LSBでの詳細なXOR演算過程
-- **性能比較**: ネイティブXORとパーセプトロンXORの処理速度比較
-- **セキュリティ評価**: OTPの完全秘匿性条件と実用性の解説
+- ③の2層のXORを各バイトの8ビットに使って、ワンタイムパッドの暗号化と復号をする（出力はすべてパーセプトロンで計算し、全バイトを演算子`^`の結果と突き合わせて表示する）
+- 入力と鍵の形式を、テキスト（UTF-8）と16進数で切り替えられる。暗号文は16進数のまま復号へ渡せる（「この暗号文を復号する」）
+- 乱数の鍵を作るボタン（`crypto.getRandomValues`で、平文と同じバイト数）
+- 出力にUTF-8として読めないバイトや制御文字があれば、テキストでコピーすると壊れることを知らせる
+- ビットごとの計算（入力・鍵・h1＝OR・h2＝NAND・出力＝AND）を先頭の16バイトまで表示。各バイトがどの文字の何バイト目かも示す
+- 演算子`^`とパーセプトロンのXORの速度の比較（1バイトあたりの時間）
 
-### タブ5: 用語集
-- **体系的分類**: 暗号、CS基礎、論理、機械学習の4カテゴリ
-- **外部リンク**: 関連ツール（OTP Animation）への統合
-- **検索機能**: カテゴリフィルターによる効率的な用語検索
+### ⑤ 用語集
 
----
+- 暗号・論理・機械学習・CS基礎の28語。キーワードで探し、分野で絞り込める
+- 定義は一次資料（Shannonの論文、HAC、教科書、OEISなど）で確かめた内容にしている
 
-## ⚙️ 技術仕様
+### 画面全体
 
-### 実装技術
-- **フロントエンド**: バニラJavaScript（ES6+）
-- **数式描画**: MathJax v3
-- **スタイリング**: CSS Grid/Flexbox、CSS カスタムプロパティ
-- **レスポンシブ**: モバイル・デスクトップ両対応
-
-### パーセプトロン仕様
-- **活性化関数**: ステップ関数 `step(z) = {1 if z ≥ 0, 0 if z < 0}`
-- **重み設定**:
-  - NOT: `y = step(-a + 0.5)`
-  - AND: `y = step(a + b - 1.5)`
-  - OR: `y = step(a + b - 0.5)`
-  - NAND: `y = step(-a - b + 1.5)`
-
-### 暗号化仕様
-- **文字エンコーディング**: UTF-8
-- **ビット順序**: MSB→LSB
-- **鍵要件**: 平文と同じバイト長
-- **エラー処理**: 鍵長不一致時の警告表示
+- 日本語と英語の切り替え（`?lang=ja`・`?lang=en`でも指定できる）
+- ライトモードとダークモード（最初はOSの設定に従う）
+- スマートフォンでは、表の下に図を置く
 
 ---
 
-## 🎯 ターゲット層
+## 📖 使い方
 
-- **情報セキュリティ初学者**: XORやワンタイムパッドの基礎理解
-- **コンピューターサイエンス学生**: 論理回路とニューラルネットワークの関連性
-- **機械学習学習者**: 線形分離可能性と多層化の必要性
-- **教育者**: 授業やワークショップでのデモ教材
-- **CTF参加者**: XOR暗号の理解深化
-
----
-
-## 🚀 活用シナリオ
-
-### 1. 教育現場でのデモ教材
-- 情報工学・暗号学入門での実演ツール
-- 抽象的概念の視覚的・体験的学習
-
-### 2. CTFトレーニング補助
-- XOR・OTP問題の理解促進
-- 鍵長一致の重要性確認
-
-### 3. 自主学習・研究支援
-- 論理回路・機械学習・暗号の接点探究
-- 性能比較実験
-
-### 4. 講演・ワークショップ
-- セキュリティ・AI講演での視覚的デモ
-- 専門外聴衆への分かりやすい説明
+1. [デモページ](https://ipusiron.github.io/perceptron-otp-visualizer/)を開きます。
+2. ①から順に進めます。各カードの表の行を選ぶと、右（スマートフォンでは下）の図の値が変わります。
+3. ②で、単層パーセプトロンの重みとバイアスが論理ゲートになる様子を確かめます。
+4. ③で、第1層のORとNANDの出力が第2層のANDに入り、XORになることを確かめます。
+5. ④で「例を入れる」を押し、「暗号化する」を押します。暗号文（16進数）とビットごとの計算が出ます。
+6. 「この暗号文を復号する」を押すと、暗号文（16進数）と鍵が復号の入力になります。「復号する」で元の平文に戻ります。
+7. 自分の文で試すときは、平文を入れてから「乱数の鍵を作る」を押します。
+8. ⑤の用語集で、出てきた言葉を確かめます。
 
 ---
 
-## 📚 補完教材
+## 🔑 ワンタイムパッドの条件
 
-### Jupyter Notebook
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ipusiron/perceptron-otp-visualizer/blob/main/notebooks/logic_gate_of_perceptron.ipynb)
-[![View on GitHub](https://img.shields.io/badge/View%20on-GitHub-black?logo=github)](https://github.com/ipusiron/perceptron-otp-visualizer/blob/main/notebooks/logic_gate_of_perceptron.ipynb)
+ワンタイムパッドは、平文と同じ長さの鍵をビットごとにXORする暗号です。Shannon（1949年）は、暗号文を見ても平文について何もわからない性質を完全秘匿と定義し、完全秘匿には鍵の数が平文の数以上必要であること、Vernam方式（ワンタイムパッド）がこれを満たすことを示しました。
 
-**内容**: 数学的実装詳細、決定境界可視化、Pythonコード例
+完全秘匿になるのは、次の条件がそろったときだけです。
 
-### 関連ツール
-- **[OTP Animation](https://ipusiron.github.io/otp-animation/)**: OTPの基礎学習用アニメーション
+- 鍵が一様な乱数である
+- 鍵が平文以上の長さである（ワンタイムパッドでは同じ長さ）
+- 鍵を一度だけ使う
+- 鍵を秘密に共有している
 
----
+**ワンタイムパッドが実用で使われにくいのは、計算の遅さではなく鍵の配送のためです。**平文と同じ長さの鍵を事前に安全に共有する必要があり、HAC（Handbook of Applied Cryptography）も、鍵の配送と管理が難しくなる点を欠点に挙げています。
 
-## 🔒 セキュリティ対策
+また、守れるのは機密性だけです。暗号文のあるビットを反転すると、復号した平文の同じビットが反転します（改ざんは防げない）。鍵を使い回したときの解読・完全秘匿・改ざんの実験は、同じシリーズの[OTP Animation](https://ipusiron.github.io/otp-animation/)で試せます。
 
-GitHub Pages公開にあたり実施したセキュリティ対策：
-
-### Content Security Policy (CSP)
-- XSS攻撃防止のため外部スクリプトを制限
-- 信頼できるCDN（jsDelivr）のみ許可
-
-### セキュリティヘッダー
-- **X-Content-Type-Options**: MIME type sniffing攻撃防止
-- **X-Frame-Options**: クリックジャッキング攻撃防止  
-- **Referrer-Policy**: リファラー情報漏洩制限
-
-### 外部リンク保護
-- 全外部リンクに `rel="noopener noreferrer"` 設定
-- Tabnabbing攻撃・リファラー漏洩防止
-
-### リソース検証
-- MathJax CDNにSubresource Integrity適用
-- スクリプト改ざん検出
+このツールの例の鍵`XMCKL`は英大文字だけで、乱数の鍵ではありません。計算の流れを追うための例です。
 
 ---
 
-## 🛠 使い方
+## 🎯 ユースケース
 
-1. **[GitHub Pagesデモ](https://ipusiron.github.io/perceptron-otp-visualizer/)** にアクセス
-2. **段階的学習**: タブ1→2→3→4の順序で進める
-3. **インタラクション**: 真理値表をクリックして回路図を確認
-4. **実践**: タブ4で実際の暗号化・復号化を体験
-5. **深掘り**: 用語集や外部リンクで知識を拡張
+### 学ぶ・教える
+
+- 情報の授業や論理回路の講義で、先生が①の表の行を選びながら、NANDだけでXORが組めることを見せる。生徒はNANDの個数（1・2・3・4個）と途中の値を追える
+- 機械学習の入門で、②の重みとバイアスを読み、「重み付きの和＋バイアス→ステップ関数」がゲートになることを確かめる。③で、単層では作れないXORが2層で作れることを見る
+- セキュリティの入門で、④のビットごとの計算から、XORが暗号化と復号で同じ計算になること（(P ⊕ K) ⊕ K = P）を確かめる。鍵の使い回しの危険はOTP Animationとあわせて学ぶ
+- 自習で、ノートブック（Python）と画面を並べ、同じゲートを別の重みで作れることを比べる
+
+### 仕事に使う
+
+- セキュリティ以外のプログラマーが、文字列とバイト列の違いを確かめる。caféの暗号文のように、UTF-8として読めないバイトやCRを含むデータは、テキストでコピーすると壊れることを目で見られる
+- 研修や社内勉強会で、「同じ結果でも実装によって速さが大きく違う」例として速度の比較を見せる（時間は端末で変わる）
+- 講演やワークショップで、AIと暗号の両方の入り口として、専門外の聞き手に段階を追って見せる
+
+### 暮らし・趣味・研究
+
+- 電子工作で、NANDゲート4個入りのIC（74HC00など）1個でXORを組む前に、①の回路図と真理値表で配線と途中の値を確かめる
+- 謎解きやパズルの制作で、XORの「同じ鍵で戻る」性質を使った仕掛けを考え、16進数の暗号文と鍵を作る（乱数の鍵を作るボタンを使う）
+- CTFの練習で、XORの暗号文を16進数で扱う感覚をつかむ
+- 調べものや研究で、ステップ関数の0での値の流儀、線形分離、完全秘匿の条件を、参考文献の一次資料とあわせて確かめる
+
+### ほかのツールと組み合わせる
+
+- [OTP Animation](https://ipusiron.github.io/otp-animation/)：鍵の使い回しの解読（クリブ・ドラッグ）・完全秘匿・改ざんの実験
+- このリポジトリーの`notebooks/logic_gate_of_perceptron.ipynb`：Pythonで同じゲートを作り、決定境界を図にする（[Google Colabで開く](https://colab.research.google.com/github/ipusiron/perceptron-otp-visualizer/blob/main/notebooks/logic_gate_of_perceptron.ipynb)）
+
+作者の意図は、学習と理解のための道具です。悪用は勧めません。
 
 ---
 
-## 📂 ディレクトリー構成
+## 🔬 技術的な説明
 
+### ファイルの役割
+
+- `js/potp-core.js`：計算部（DOMを使わない）。NANDで組むゲート、単層パーセプトロン、2層のXOR、バイト列のXOR、16進数の読み取り、UTF-8の判定、乱数の鍵、速度の比較
+- `js/app.js`：画面の処理（タブ、表の行の選択、OTPの入出力、ビットの図、用語集）
+- `js/messages.js`：日本語と英語の文言、用語集の並び
+- `js/i18n.js`・`js/theme.js`・`js/theme-init.js`：言語とテーマの切り替え
+
+### パーセプトロンの重み
+
+出力はstep(重み付きの和＋バイアス)で、ステップ関数は0以上で1、0未満で0です（0のときの値は文献によって0・1/2・1と分かれ、このツールは1）。
+
+| ゲート | 重み | バイアス | 式 |
+|---|---|---|---|
+| NOT | -1 | 0.5 | step(-a + 0.5) |
+| AND | 1, 1 | -1.5 | step(a + b - 1.5) |
+| OR | 1, 1 | -0.5 | step(a + b - 0.5) |
+| NAND | -1, -1 | 1.5 | step(-a - b + 1.5) |
+
+2入力の論理関数は16個あり、単層パーセプトロン（しきい値関数）で表せるのはそのうち14個です（OEIS A000609）。表せないのはXORとXNORの2つです。
+
+### NANDで組むゲート
+
+| ゲート | NANDの個数 | 式 |
+|---|---|---|
+| NOT | 1 | NAND(a, a) |
+| AND | 2 | NAND(t, t)、t = NAND(a, b) |
+| OR | 3 | NAND(NAND(a, a), NAND(b, b)) |
+| XOR | 4 | NAND(NAND(a, s), NAND(b, s))、s = NAND(a, b) |
+
+### 2層のXOR
+
+| a | b | h1 = OR(a, b) | h2 = NAND(a, b) | 出力 = AND(h1, h2) | a ^ b |
+|---|---|---|---|---|---|
+| 0 | 0 | 0 | 1 | 0 | 0 |
+| 0 | 1 | 1 | 1 | 1 | 1 |
+| 1 | 0 | 1 | 1 | 1 | 1 |
+| 1 | 1 | 1 | 0 | 0 | 0 |
+
+### ワンタイムパッドの計算の例
+
+| | テキスト | 16進数 |
+|---|---|---|
+| 平文P | HELLO | 48 45 4C 4C 4F |
+| 鍵K | XMCKL | 58 4D 43 4B 4C |
+| 暗号文C = P ⊕ K | （制御文字だけ） | 10 08 0F 07 03 |
+
+暗号文には0x80以上のバイトや制御文字が出ます。たとえば`café`（`63 61 66 C3 A9`）を鍵`kkkkk`で暗号化すると`08 0A 0D A8 C2`になり、CR（`0D`）と、UTF-8として読めない`A8 C2`を含みます。CRは入力欄に貼るとLFに変わり、読めないバイトは置換文字（U+FFFD）になるので、テキストでコピーした暗号文からは元に戻りません。そのため、このツールは暗号文を16進数で受け渡します。
+
+### パーセプトロンのXORと演算子^の違い
+
+| 項目 | 演算子^のXOR | パーセプトロンのXOR |
+|---|---|---|
+| 1ビットの計算 | XORを1回 | ニューロン3個（OR・NAND・AND）の重み付きの和とステップ関数 |
+| 結果 | 同じ | 同じ（全バイトで突き合わせて確かめる） |
+| 速さ | 速い | 遅い（手元の計測では数百倍以上） |
+| 鍵の準備 | 平文と同じ長さの乱数の鍵を事前に共有する | 同じ |
+| 安全性 | 鍵の条件を満たせば完全秘匿 | 同じ（計算の方法によらない） |
+| 学べること | XORと暗号 | XORと暗号に加えて、論理回路とニューラルネットのつながり |
+
+### 速度の比較の測り方
+
+10,000バイトの乱数どうしのXORを、それぞれ0.1秒以上くり返し、かかった時間を回数とバイト数で割ります。`performance.now()`の刻みは、Chromiumで0.1ms、Firefox・Safariで1ms（クロスオリジン分離をしていない場合。GitHub Pagesはこの状態）なので、1回だけ測ると0msになることがあります。2026年10月の手元の計測では、パーセプトロンのXORは演算子`^`の約500〜1,500倍の時間がかかりました（Chromium・Edge・Firefox）。
+
+---
+
+## 🔒 セキュリティ
+
+- CSPはmeta要素で`default-src 'self'`系に限っています（`script-src 'self'`・`style-src 'self'`・`connect-src 'none'`など）。インラインのスクリプト・style属性・イベントハンドラーはありません
+- 外部のスクリプト（CDN）を読みません。数式の表示のライブラリーも使っていません
+- 外と通信しません（`connect-src 'none'`、fetchを使わない）。入力した文字と鍵はブラウザーの外へ出ず、保存もしません（保存するのは言語とテーマの選択だけ）
+- 乱数の鍵は`crypto.getRandomValues`で作ります
+- 画面への書き込みは`textContent`で行い、`innerHTML`を使いません
+- `<meta name="referrer" content="no-referrer">`、外部へのリンクは`rel="noopener noreferrer"`
+- GitHub Pagesでは独自のレスポンスヘッダーを設定できません。meta要素のCSPではframe-ancestorsが効かず、X-Frame-Optionsもmeta要素では効かないので、ほかのサイトへの埋め込みは防げません
+
+---
+
+## ⚠️ 注意と限界
+
+- 教育用のツールです。パーセプトロンの重みは手で決めた値で、学習はしません
+- 乱数の鍵は暗号論的に安全な乱数で作りますが、ワンタイムパッドの実用上の難しさ（鍵の配送と管理）は解決しません
+- 例の鍵`XMCKL`は乱数の鍵ではありません
+- 1回に扱えるのは65,536バイトまでで、ビットごとの計算は先頭の16バイトまで表示します
+- 速度の比較の時間は、端末・ブラウザー・そのときの負荷で変わります
+- 出力のテキストの欄は、制御文字や読めないバイトを正しく表せません。正確な値は16進数で確かめてください
+
+---
+
+## 🧪 テスト
+
+```bash
+npm test
 ```
-perceptron-otp-visualizer/
-├── assets/
-│   └── screenshot.png          # アプリケーションのスクリーンショット
-├── data/
-│   └── words.json              # 用語集データ（JSON形式）
-├── notebooks/
-│   └── logic_gate_of_perceptron.ipynb  # 補完学習用Jupyterノートブック
-├── .claude/
-│   └── settings.local.json     # Claude Code設定ファイル
-├── index.html                  # メインHTMLファイル
-├── script.js                   # JavaScriptロジック
-├── style.css                   # スタイルシート
-├── CLAUDE.md                   # Claude Code用プロジェクト仕様
-├── README.md                   # プロジェクト説明（このファイル）
-├── LICENSE                     # MITライセンス
-├── .gitignore                  # Git除外設定
-└── .nojekyll                   # GitHub Pages設定
-```
+
+- Node.js 22以上の`node --test`で動きます。依存パッケージはありません
+- GitHub Actionsで、pushとpull requestのたびに自動で実行します
+- 計算部（ゲート・パーセプトロン・256×256の全組のXOR・16進数・UTF-8・往復）、HTML（CSP・タブの形・表の値・図の重み）、文言（日英のキー・表記）、配色（コントラスト）、書式、READMEの表と例を検査します
 
 ---
 
-## 🔍 パーセプトロンOTP vs 従来OTPの比較
+## 🔗 参考文献
 
-本ツールでは、教育目的でXOR演算をパーセプトロンで実装していますが、実際の暗号化処理では従来のOTPと比較してどのような特徴があるのでしょうか。
-
-### 🚀 処理性能
-
-| 項目 | 従来OTP | パーセプトロンOTP |
-|------|---------|------------------|
-| **処理速度** | 超高速（ハードウェア最適化） | 低速（ソフトウェア計算） |
-| **メモリ使用量** | 極少（ビット演算） | 多（浮動小数点計算） |
-| **CPU使用率** | 極少 | 高（多層計算） |
-
-### 🔐 暗号学的特性
-
-| 項目 | 従来OTP | パーセプトロンOTP |
-|------|---------|------------------|
-| **理論的安全性** | 完全秘匿性 | 完全秘匿性（XORが正しく実装されている場合） |
-| **実装複雑性** | 単純 | 複雑（重み設定、バイアス調整が必要） |
-| **実装エラーリスク** | 低（単純なXOR演算） | 高（多層計算でのエラー可能性） |
-
-### 📚 教育的価値
-
-| 項目 | 従来OTP | パーセプトロンOTP |
-|------|---------|------------------|
-| **理解しやすさ** | 低（ビット演算の知識が必要） | 高（視覚的に段階を追える） |
-| **学習効果** | XOR・暗号の理解 | XOR・暗号・機械学習の統合理解 |
-| **応用展開** | 他のXOR暗号への応用 | ニューラルネットワーク全般への応用 |
-
-### ⚠️ 実用性の違い
-
-**従来OTP**
-- ✅ 高速処理で実用的
-- ✅ シンプルな実装
-- ✅ 組み込みシステムに最適
-
-**パーセプトロンOTP**
-- 🎓 教育・研究目的に特化
-- 🔍 概念理解のためのデモンストレーション
-- ⚠️ 実用性は低い（処理速度・複雑性の観点）
-
-### 🎯 使い分けの指針
-
-- **実際の暗号化アプリケーション**: 従来OTP
-- **教育・研究・デモンストレーション**: パーセプトロンOTP
-- **機械学習とセキュリティの橋渡し学習**: パーセプトロンOTP
-- **性能重視のシステム**: 従来OTP
-
----
-
-## 🔧 応用の可能性
-
-### パーセプトロンXOR
-- **教育教材**  
-  単層パーセプトロンでは線形分離できないが、多層にすることでXORを実現できることを示す定番教材。  
-  ニューラルネットワークにおける「非線形性」の重要性を直感的に理解できる。  
-
-- **機械学習の入門実験**  
-  XOR問題は「最小の非線形問題」として、誤差逆伝播や学習アルゴリズムの動作確認に利用される。  
-
-- **論理回路設計の理解**  
-  XORは加算回路（半加算器・全加算器）の中心的な要素。パーセプトロンで再現することで、AIと回路理論の橋渡しになる。  
-
-### パーセプトロンOTP
-- **暗号学習のアナロジー**  
-  XOR演算とOTP暗号の関係を、パーセプトロンを使った代替的なモデルで体験できる。暗号における鍵の性質（長さ・乱数性・一度きりの使用）の重要性を理解する助けになる。  
-
-- **性能比較の題材**  
-  ネイティブXORとパーセプトロンXORの速度差を比較することで、「理論的には同じ処理でも実装コストは大きく異なる」という実用上の観点を学べる。  
-
-- **教育用シミュレーション**  
-  「理論上は完全秘匿でも、実用上は遅すぎる／非効率である」という現実を示す教材として活用できる。  
+- C. E. Shannon, "Communication Theory of Secrecy Systems", Bell System Technical Journal 28(4), 656–715, 1949
+- A. J. Menezes, P. C. van Oorschot, S. A. Vanstone, Handbook of Applied Cryptography, CRC Press, 1996（§1.5.4、§6.1.1）[https://cacr.uwaterloo.ca/hac/](https://cacr.uwaterloo.ca/hac/)
+- D. Boneh, V. Shoup, A Graduate Course in Applied Cryptography, Version 0.6, 2023（定義2.1、定理2.5）[https://toc.cryptobook.us/](https://toc.cryptobook.us/)
+- G. S. Vernam, "Secret Signaling System", US Patent 1,310,719, 1919
+- S. M. Bellovin, "Frank Miller: Inventor of the One-Time Pad", Cryptologia 35(3), 203–222, 2011
+- F. Rosenblatt, "The perceptron: A probabilistic model for information storage and organization in the brain", Psychological Review 65(6), 386–408, 1958
+- W. S. McCulloch, W. Pitts, "A logical calculus of the ideas immanent in nervous activity", Bulletin of Mathematical Biophysics 5(4), 115–133, 1943
+- M. Minsky, S. Papert, Perceptrons, MIT Press, 1969
+- A. B. J. Novikoff, "On convergence proofs on perceptrons", Symposium on the Mathematical Theory of Automata 12, 615–622, 1962
+- H. M. Sheffer, "A set of five independent postulates for Boolean algebras, with application to logical constants", Transactions of the American Mathematical Society 14(4), 481–488, 1913
+- OEIS A000609, Number of threshold functions of n or fewer variables [https://oeis.org/A000609](https://oeis.org/A000609)
+- W3C, ARIA Authoring Practices Guide, Tabs Pattern [https://www.w3.org/WAI/ARIA/apg/patterns/tabs/](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/)
+- 森巧尚『Python 3年生 ディープラーニングのしくみ』翔泳社、2023年（ノートブックのコードの元）
 
 ---
 
 ## 🔄 今後の拡張予定
 
-- **学習アルゴリズム可視化**: 誤差逆伝播法のアニメーション
-- **決定境界表示**: 2D平面での線形分離可能性可視化  
-- **性能ベンチマーク**: 文字列長別の処理速度比較
-- **マルチバイト対応**: 絵文字・結合文字の詳細ハンドリング
-- **カスタム重み設定**: ユーザーが重みを調整可能な実験モード
+- 誤差逆伝播法で2層のネットワークを学習させるアニメーション
+- 入力の平面に決定境界を描く表示
+- 重みとバイアスを自分で動かす実験
+
+---
+
+## 📁 ディレクトリー構造
+
+```text
+perceptron-otp-visualizer/
+├── .github/                            # GitHubの設定
+│   └── workflows/                      # GitHub Actionsのワークフロー
+│       └── test.yml                    # pushとpull requestでnpm testを実行
+├── assets/                             # READMEのスクリーンショット
+│   ├── en/                             # 英語の画面のスクリーンショット
+│   │   ├── screenshot.png              # 2層のXOR
+│   │   ├── screenshot2.png             # HELLOの暗号化とビットごとの計算
+│   │   ├── screenshot3.png             # caféの暗号化（16進数で受け渡す）
+│   │   ├── screenshot4.png             # NAND4個のXOR
+│   │   ├── screenshot5.png             # 単層パーセプトロンのAND
+│   │   ├── screenshot6.png             # ダークモード
+│   │   └── screenshot7.png             # 用語集
+│   ├── screenshot.png                  # 2層のXOR
+│   ├── screenshot2.png                 # HELLOの暗号化とビットごとの計算
+│   ├── screenshot3.png                 # caféの暗号化（16進数で受け渡す）
+│   ├── screenshot4.png                 # NAND4個のXOR
+│   ├── screenshot5.png                 # 単層パーセプトロンのAND
+│   ├── screenshot6.png                 # ダークモード
+│   └── screenshot7.png                 # 用語集
+├── js/                                 # 画面と計算のスクリプト
+│   ├── app.js                          # 画面の処理（タブ・表・OTP・用語集）
+│   ├── i18n.js                         # 言語の選択と静的な文言の差し替え
+│   ├── messages.js                     # 日本語と英語の文言、用語集の並び
+│   ├── potp-core.js                    # 計算部（ゲート・パーセプトロン・XOR・16進数・UTF-8）
+│   ├── theme-init.js                   # 描画の前に保存したテーマを当てる
+│   └── theme.js                        # ライト・ダークの切り替え
+├── notebooks/                          # 補完教材
+│   └── logic_gate_of_perceptron.ipynb  # Pythonでパーセプトロンのゲートと決定境界
+├── test/                               # node --testのテスト
+│   ├── contrast.test.js                # 配色のコントラスト
+│   ├── core.test.js                    # 計算部
+│   ├── format.test.js                  # 行の長さ・改行・制御文字
+│   ├── html.test.js                    # index.htmlの検査（CSP・タブ・表・図）
+│   ├── i18n.test.js                    # 言語の決め方
+│   ├── load.js                         # 画面のスクリプトをテストに読み込む
+│   ├── messages.test.js                # 文言（日英のキー・表記・事実）
+│   └── readme.test.js                  # READMEの表・例・構造
+├── .gitignore                          # Gitで管理しないファイル
+├── .nojekyll                           # GitHub PagesでJekyllを使わない
+├── CLAUDE.md                           # Claude Code用のプロジェクトの説明
+├── LICENSE                             # MITライセンス
+├── README.en.md                        # 英語のREADME
+├── README.md                           # 日本語のREADME（このファイル）
+├── index.html                          # 画面（5つのタブ）
+├── package.json                        # npm testの設定（依存なし）
+└── style.css                           # 配色（ライト・ダーク）とレイアウト
+```
+
+---
+
+## 💻 動作環境
+
+- 新しめのChrome・Edge・Firefox・Safari（デスクトップとスマートフォン）
+- `index.html`をブラウザーで直接開いても（`file://`）動きます。ローカルのサーバーで開く場合は`python -m http.server 8000`のあと`http://localhost:8000/`を開きます
+- テストはNode.js 22以上
 
 ---
 
 ## 📄 ライセンス
 
-MIT License – 詳細は [LICENSE](LICENSE) を参照してください。
+MIT License - 詳細は[LICENSE](LICENSE)を参照してください。
 
 ---
 
-## 🛠 このツールについて
+## 🛠️ このツールについて
+
 本ツールは、「生成AIで作るセキュリティツール100」プロジェクトの一環として開発されました。
 このプロジェクトでは、AIの支援を活用しながら、セキュリティに関連するさまざまなツールを100日間にわたり制作・公開していく取り組みを行っています。
 
