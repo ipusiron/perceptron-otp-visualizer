@@ -1,0 +1,514 @@
+// 画面の文言（日本語・英語で同じキー）。t(key, vars, lang) で {name} を値に置き換える。globalThis.PotpMessages に置く
+// 文中の **…** は太字、改行（\n）は改行として i18n.js が要素で組み立てる（HTML として解釈しない）
+(() => {
+  'use strict';
+
+  const ja = {
+    'ui.subtitle': 'NANDの普遍性 → パーセプトロンでゲート → 2層のパーセプトロンでXOR → そのXORでワンタイムパッド',
+    'ui.tabsLabel': '表示の切り替え',
+    'ui.langButton': 'English',
+    'ui.langLabel': 'Switch to English',
+    'ui.noscript': 'このページはJavaScriptで動きます。JavaScriptを有効にしてから開き直してください。',
+    'ui.repo': 'GitHubリポジトリー（ipusiron/perceptron-otp-visualizer）',
+    'theme.toLight': 'ライトモードに切り替える',
+    'theme.toDark': 'ダークモードに切り替える',
+
+    'tab.nand': '① NANDユニバーサル',
+    'tab.gates': '② パーセプトロンでゲート',
+    'tab.xor': '③ パーセプトロンXOR',
+    'tab.otp': '④ パーセプトロンOTP',
+    'tab.glossary': '⑤ 用語集',
+
+    'gate.not': 'NOTゲート',
+    'gate.and': 'ANDゲート',
+    'gate.or': 'ORゲート',
+    'gate.nand': 'NANDゲート',
+    'gate.xor': 'XORゲート',
+    'table.rowHint': '表の行を選ぶと、右（スマートフォンでは下）の図の値が変わります。Enterキー・スペースキーでも選べます。',
+    'svg.nand': 'NANDゲートの記号（入力a・b、出力z）',
+    'svg.not': 'NOTの回路：1つのNANDの2つの入力にaをつなぐ',
+    'svg.and': 'ANDの回路：NAND(a, b)の出力tを、2つ目のNANDの2つの入力につなぐ',
+    'svg.or': 'ORの回路：NAND(a, a)の出力tとNAND(b, b)の出力sを、3つ目のNANDで結ぶ',
+    'svg.xor': 'XORの回路：NAND(a, b)の出力sを、NAND(a, s)とNAND(b, s)に入れ、その2つの出力を4つ目のNANDで結ぶ',
+    'svg.pnot': 'NOTのパーセプトロン：重み−1、バイアス+0.5、ステップ関数',
+    'svg.pand': 'ANDのパーセプトロン：重み+1と+1、バイアス−1.5、ステップ関数',
+    'svg.por': 'ORのパーセプトロン：重み+1と+1、バイアス−0.5、ステップ関数',
+    'svg.pnand': 'NANDのパーセプトロン：重み−1と−1、バイアス+1.5、ステップ関数',
+    'svg.mlp': '2層のパーセプトロン：第1層にORとNAND、第2層にAND',
+
+    'nand.title': 'NANDユニバーサル',
+    'nand.lead': 'NANDだけで**NOT・AND・OR・XOR**を組めます（NANDは機能的に完全）。表の行を選ぶと、回路の値が変わります。',
+    'nand.refTitle': '基本のNANDゲート',
+    'nand.basic': '1. 基本ゲート構成',
+    'nand.composite': '2. 複合ゲート構成',
+    'nand.not.desc': 'NANDの2つの入力に同じ値を入れると、NOTになります。\nNOT(a) = NAND(a, a)',
+    'nand.and.desc': 'NANDの出力を、もう一度NAND（2つの入力に同じ値＝NOT）に通すと、ANDになります。NANDゲート2個。\n'
+      + 'AND(a, b) = NAND(t, t)、t = NAND(a, b)',
+    'nand.or.desc': 'aとbをそれぞれNOT（NAND(a, a)・NAND(b, b)）してからNANDで結ぶと、ORになります。NANDゲート3個。\n'
+      + 'OR(a, b) = NAND(t, s)、t = NAND(a, a)、s = NAND(b, b)',
+    'nand.xor.desc': 'NANDゲート4個でXORになります。最初のNANDの出力sを、ほかの2つのNANDの片方の入力に使い、最後に2つの出力をNANDで結びます。\n'
+      + 'XOR(a, b) = NAND(t, u)、s = NAND(a, b)、t = NAND(a, s)、u = NAND(b, s)',
+    'nand.summary': '各ゲートの真理値表（まとめ）',
+
+    'gates.title': 'パーセプトロンで基本ゲートをつくる',
+    'gates.lead': '単層パーセプトロン（しきい値素子1個）で、NOT・AND・OR・NANDを作れます。入力の重み付きの和にバイアスを足した値を、ステップ関数に通します。\n'
+      + 'ステップ関数：0以上なら1、0未満なら0（0のときの値は文献によって0・1/2・1と分かれ、このツールは1）。',
+    'gates.basic': '1. 基本パーセプトロンゲート',
+    'gates.not.desc': '重みを負（−1）、バイアスを正（+0.5）にすると、入力を反転します。\nNOT(a) = step(−a + 0.5)',
+    'gates.and.desc': '重みを正（+1, +1）、バイアスを−1.5にすると、2つとも1のときだけ和が0以上になります。\nAND(a, b) = step(a + b − 1.5)',
+    'gates.or.desc': 'バイアスを−0.5にすると、どちらかが1なら和が0以上になります。\nOR(a, b) = step(a + b − 0.5)',
+    'gates.nand.desc': 'ANDの重みとバイアスの符号を反対にすると、出力が反転してNANDになります。\nNAND(a, b) = step(−a − b + 1.5)',
+    'gates.summary': '各ゲートの真理値表（まとめ）',
+    'gates.xorNote': 'XORだけは、どんな重みとバイアスを選んでも単層では作れません。4点（0,0）（0,1）（1,0）（1,1）のうち、'
+      + '出力が1の2点と0の2点を、直線1本で分けられないためです（線形分離できない）。→ ③へ',
+
+    'xor.title': '2層のパーセプトロンでXORをつくる',
+    'xor.lead': 'XORは線形分離できないので、単層のパーセプトロンでは作れません。第1層でORとNANDを計算し、第2層でその2つのANDをとると、XORになります。',
+    'xor.notebook': 'パーセプトロンの論理ゲートのPython実装と決定境界の図（Jupyter Notebook）',
+    'xor.layers': '1. 多層パーセプトロンXOR',
+    'xor.card': 'XORの2層構成',
+    'xor.desc': '第1層でh1 = OR(a, b)とh2 = NAND(a, b)を計算し、第2層でAND(h1, h2)をとります。どのゲートも②のパーセプトロンです。\n'
+      + 'XOR(a, b) = AND(OR(a, b), NAND(a, b))',
+    'xor.summary': 'XORの真理値表（まとめ）',
+    'th.layer1Or': '第1層のOR（h1）',
+    'th.layer1Nand': '第1層のNAND（h2）',
+    'th.layer2And': '第2層のAND（出力）',
+    'th.compare': 'a ^ b（比較）',
+
+    'otp.title': 'パーセプトロンOTP',
+    'otp.lead': '③の2層パーセプトロンのXORを、各バイトの8ビットに1つずつ使って、ワンタイムパッド（OTP）の暗号化と復号をします。'
+      + '暗号化も復号も同じ計算です（C = P ⊕ K、P = C ⊕ K）。',
+    'otp.mode': 'モード',
+    'otp.encrypt': '暗号化',
+    'otp.decrypt': '復号',
+    'otp.inputPlain': '平文P',
+    'otp.inputCipher': '暗号文C',
+    'otp.format': '形式',
+    'otp.fmtText': 'テキスト（UTF-8）',
+    'otp.fmtHex': '16進数',
+    'otp.key': '鍵K',
+    'otp.runEncrypt': '暗号化する（C = P ⊕ K）',
+    'otp.runDecrypt': '復号する（P = C ⊕ K）',
+    'otp.keyRandom': '乱数の鍵を作る',
+    'otp.sample': '例を入れる',
+    'otp.info': '{n}バイト　16進数：{hex}',
+    'otp.infoLong': '{n}バイト　16進数：{hex} …',
+    'otp.keyMade': '{field}と同じ{n}バイトの乱数の鍵を作りました（crypto.getRandomValues）。',
+    'otp.sampleSet': '例を入れました（平文HELLO・鍵XMCKL）。',
+    'otp.sampleSetDecrypt': '例を入れました（暗号文10 08 0F 07 03・鍵XMCKL。復号するとHELLO）。',
+    'otp.note': 'OTPが完全秘匿になるのは、鍵が一様な乱数で、平文以上の長さ（OTPでは同じ長さ）があり、一度だけ使い、秘密に共有されているときです。'
+      + '守れるのは機密性だけで、暗号文のビットを反転すると平文の同じビットが反転します（改ざんは防げない）。例の鍵XMCKLは英大文字だけで、乱数の鍵ではありません。',
+    'otp.related': '鍵を使い回したときの解読・完全秘匿・改ざんの実験は、OTP Animationへ',
+    'otp.resultEncrypt': '暗号化の結果',
+    'otp.resultDecrypt': '復号の結果',
+    'otp.outHex': '16進数',
+    'otp.outText': 'テキスト（UTF-8として読んだもの）',
+    'otp.toDecrypt': 'この暗号文を復号する',
+    'otp.movedToDecrypt': '暗号文（16進数）と鍵をそのまま復号の入力にしました。「復号する」を押してください。',
+    'otp.check': 'パーセプトロンのXORと、JavaScriptの演算子 ^ の結果は、全{n}バイトで一致しました。',
+    'otp.checkNg': 'パーセプトロンのXORと演算子 ^ の結果が、{n}バイト中{m}バイトで一致しません。',
+    'otp.warnInvalid': 'UTF-8として読めないバイトがあります（テキストでは置換文字で表示）。正確な値は16進数で確かめてください。',
+    'otp.warnControl': '制御文字が{n}個あります（改行・CRなど）。テキストとしてコピーすると変わることがあるので、16進数で受け渡してください。',
+    'otp.viz': 'ビットごとの計算（各バイトMSB→LSB）',
+    'otp.vizLead': '各ビットで、第1層がh1 = OR(x, k)とh2 = NAND(x, k)を、第2層が出力 = AND(h1, h2)を計算します（xは入力、kは鍵のビット）。',
+    'otp.vizByte': '{i}バイト目：入力{x}、鍵{k} → 出力{y}',
+    'otp.vizMore': '先頭の{shown}バイトだけを表示しています（全{n}バイト）。',
+    'otp.vizTableLabel': '{i}バイト目のビットごとの計算',
+    'byte.ascii': '0x{hex}（「{ch}」）',
+    'byte.space': '0x{hex}（空白）',
+    'byte.control': '0x{hex}（制御文字U+{cp}）',
+    'byte.part': '0x{hex}（「{ch}」の{part}/{size}バイト目）',
+    'byte.invalid': '0x{hex}（UTF-8として読めない）',
+    'field.plain': '平文',
+    'field.cipher': '暗号文',
+    'field.key': '鍵',
+
+    'err.empty': '{field}が空です。',
+    'err.lengthMismatch': '鍵は{field}と同じバイト数にしてください（{field}：{a}バイト、鍵：{b}バイト）。「乱数の鍵を作る」で合わせられます。',
+    'err.hexChar': '{field}の16進数の{pos}文字目「{char}」は読めません（0〜9・A〜Fと区切りだけ）。',
+    'err.hexOdd': '{field}の16進数の桁数が奇数です（1バイト＝2桁）。',
+    'err.tooLong': '{field}が長すぎます（{n}バイト。上限は{max}バイト）。',
+    'err.randomNeedsInput': '先に{field}を入れてください（鍵のバイト数を合わせるため）。',
+
+    'bench.title': '速度の比較',
+    'bench.lead': '10,000バイトの乱数どうしのXORを、JavaScriptの演算子 ^ と、パーセプトロンのXORでくり返し計算し、1バイトあたりの時間を比べます（それぞれ約0.1秒）。',
+    'bench.run': '測る',
+    'bench.running': '測っています…',
+    'bench.colMethod': '計算',
+    'bench.colPerByte': '1バイトあたり',
+    'bench.colReps': 'くり返し',
+    'bench.native': '演算子 ^',
+    'bench.perceptron': 'パーセプトロンのXOR',
+    'bench.nsValue': '{v} ns',
+    'bench.repsValue': '{n}回',
+    'bench.ratio': 'パーセプトロンのXORは、演算子 ^ の約{x}倍の時間がかかりました。',
+    'bench.equal': '結果は全{n}バイトで一致しました。',
+    'bench.notEqual': '結果が一致しません。',
+    'bench.note': '時間は端末とブラウザーで変わります。performance.now()の刻み（Chromiumで0.1ms、Firefox・Safariで1ms）より十分長くなるまでくり返し、回数で割って測ります。',
+
+    'gl.title': '用語集',
+    'gl.search': '用語を探す',
+    'gl.searchPlaceholder': '例）XOR',
+    'gl.filterLabel': '分野で絞り込む',
+    'gl.count': '{n}件',
+    'gl.none': '見つかりませんでした。',
+    'cat.all': 'すべて',
+    'cat.crypto': '暗号',
+    'cat.logic': '論理',
+    'cat.ml': '機械学習',
+    'cat.bit': 'CS基礎',
+
+    'gl.otp.term': 'OTP（One-Time Pad、ワンタイムパッド）',
+    'gl.otp.desc': '平文と同じ長さの一様な乱数の鍵を、平文にXORする暗号方式。鍵を一度だけ使い、秘密に共有すれば完全秘匿になる。鍵の配送と管理が実用上の難点。',
+    'gl.otp.link': 'OTP Animationを開く',
+    'gl.perfect.term': '完全秘匿（Perfect Secrecy）',
+    'gl.perfect.desc': '暗号文を見ても、平文について何もわからない性質。Shannon（1949年）が定義した。'
+      + '条件は、鍵が一様な乱数・平文以上の長さ（OTPでは同じ長さ）・一度だけ使う・秘密に共有されていること。',
+    'gl.vernam.term': 'バーナム暗号（Vernam cipher）',
+    'gl.vernam.desc': '平文と鍵をビットごとにXORする暗号。Vernamの特許（1919年登録）が元。鍵を使い捨てにする考え（OTP）は、VernamとMauborgneのどちらの発案かに異説がある。'
+      + 'さらに早い1882年に、Frank Millerがワンタイムパッドの方式を公刊していた。',
+    'gl.strength.term': '暗号強度',
+    'gl.strength.desc': '攻撃者が暗号を破るのに必要な計算量やコスト。OTPは計算量によらず安全（情報理論的に安全）だが、守れるのは機密性だけで、改ざんは防げない。',
+    'gl.malleable.term': '改ざん（展性、Malleability）',
+    'gl.malleable.desc': '暗号文を変えると、復号した平文が予測どおりに変わる性質。OTPでは暗号文のあるビットを反転すると、平文の同じビットが反転する。改ざんを見つけるには別の仕組み（MACなど）が要る。',
+    'gl.keymgmt.term': '鍵管理（Key Management）',
+    'gl.keymgmt.desc': '鍵の生成・配送・保存・破棄の方法。OTPは平文と同じ長さの鍵を事前に共有する必要があり、これが実用上の最大の課題。',
+    'gl.random.term': '乱数（Randomness）',
+    'gl.random.desc': '暗号に欠かせない要素。予測できない乱数と、決まった手順で作る擬似乱数を区別する。このツールの鍵はcrypto.getRandomValuesで作る。',
+    'gl.prng.term': '擬似乱数生成器（PRNG）',
+    'gl.prng.desc': '決まった手順で、乱数のように見える数列を作る仕組み。暗号には、出力から次を予測できない暗号論的に安全なもの（CSPRNG）を使う。',
+    'gl.shannon.term': 'シャノン（Claude Shannon）',
+    'gl.shannon.desc': '情報理論の父。1949年の論文で完全秘匿を定義し、鍵の数が平文の数以上必要であることと、バーナム方式（OTP）がこれを満たすことを示した。',
+    'gl.compsec.term': '計算量的安全性',
+    'gl.compsec.desc': '現実的な時間では解けないと考えられている計算問題を根拠にした安全性。普段使う暗号の多くはこれ。OTPの情報理論的安全性とは区別される。',
+    'gl.lsb.term': 'LSB（Least Significant Bit）',
+    'gl.lsb.desc': '最下位ビット。ビット列の右端で、重みがもっとも小さいビット。',
+    'gl.msb.term': 'MSB（Most Significant Bit）',
+    'gl.msb.desc': '最上位ビット。ビット列の左端で、重みがもっとも大きいビット。',
+    'gl.xor.term': 'XOR（排他的論理和）',
+    'gl.xor.desc': '2つのビットが違うとき1、同じとき0。a ⊕ b。同じ値で2回XORすると元に戻る（(P ⊕ K) ⊕ K = P）ので、暗号化と復号が同じ計算になる。',
+    'gl.truth.term': '真理値表',
+    'gl.truth.desc': '入力の全組み合わせに対する、論理式の出力を表にしたもの。',
+    'gl.gate.term': '論理ゲート（Logic Gate）',
+    'gl.gate.desc': '0と1の入力から、決まった論理演算の結果を出す基本の回路。AND・OR・NOT・NAND・XORなど。',
+    'gl.nand.term': 'NAND（否定論理積）と機能的完全性',
+    'gl.nand.desc': 'ANDの否定。NANDだけで、どんな論理関数も作れる（機能的完全）。Sheffer（1913年）の論文で広く知られた'
+      + '（Shefferの記号はNORの意味で、NANDの意味にしたのはNicod〔1917年〕。より早い公刊はStamm〔1911年〕）。',
+    'gl.boolean.term': 'ブール代数（Boolean Algebra）',
+    'gl.boolean.desc': '論理演算を代数として扱う体系。論理ゲートや真理値表の基礎になる数学。',
+    'gl.neuron.term': 'ニューロン（Neuron）',
+    'gl.neuron.desc': '生物の神経細胞。複数の入力信号を受け取り、一定の強さを超えると信号を出す。人工ニューロンのモデルになった。',
+    'gl.perceptron.term': 'パーセプトロン（Perceptron）',
+    'gl.perceptron.desc': 'Rosenblatt（1958年）が提案した人工ニューロンのモデル。入力の重み付きの和にバイアスを足し、ステップ関数（活性化関数）で0か1を出す。'
+      + '単層では線形分離できる問題しか解けず、XORには多層が要る。',
+    'gl.learning.term': '学習則（パーセプトロン）',
+    'gl.learning.desc': '出力の誤りに応じて重みを直す規則（w ← w + η(t − y)x）。線形分離できるデータなら、有限回の更新で収束する（Novikoff、1962年）。'
+      + 'XORのように分離できないと収束しない。このツールの重みは学習させず、手で決めた値。',
+    'gl.ai.term': '人工知能（AI: Artificial Intelligence）',
+    'gl.ai.desc': '人間の知能を機械で実現しようとする技術の分野。推論・学習・認識・自然言語処理などを含む。機械学習やディープラーニングはその一部。',
+    'gl.ml.term': '機械学習（ML: Machine Learning）',
+    'gl.ml.desc': 'データからパターンを学び、予測や分類をする手法。パーセプトロン・決定木・サポートベクターマシンなど、多くのアルゴリズムがある。',
+    'gl.dl.term': 'ディープラーニング（深層学習）',
+    'gl.dl.desc': '多層のニューラルネットワークを使う機械学習の手法。多くの隠れ層で、複雑な特徴を自動で学ぶ。画像認識・自然言語処理・音声認識などで性能を大きく上げた。',
+    'gl.linsep.term': '線形分離',
+    'gl.linsep.desc': '入力の空間を、直線（平面）1本で2つのグループに分けられる性質。2入力の論理関数16個のうち、XORとXNORの2つだけが線形分離できない。',
+    'gl.step.term': 'ステップ関数（Heaviside step function）',
+    'gl.step.desc': '入力が0以上なら1、0未満なら0を返す関数（このツールの定義。0のときの値は文献によって0・1/2・1と分かれる）。パーセプトロンの活性化関数。',
+    'gl.activation.term': '活性化関数（Activation Function）',
+    'gl.activation.desc': 'ニューロンで、入力の重み付きの和を出力に変える関数。ステップ関数・シグモイド関数・ReLUなど。',
+    'gl.mlp.term': '多層パーセプトロン（MLP: Multi-Layer Perceptron）',
+    'gl.mlp.desc': 'パーセプトロンを層の形につないだモデル。単層では表せない、線形分離できない問題を扱える。このツールのXORは2層。',
+    'gl.linclass.term': '線形分類器',
+    'gl.linclass.desc': '入力の空間を、直線（平面）1本で2つに分けて判定するもの。単層パーセプトロンは線形分類器で、XORのように直線1本で分けられない問題には足りない。'
+  };
+
+  const en = {
+    'ui.subtitle': 'NAND universality → gates from perceptrons → XOR from a two-layer perceptron → a one-time pad with that XOR',
+    'ui.tabsLabel': 'Views',
+    'ui.langButton': '日本語',
+    'ui.langLabel': '日本語に切り替える',
+    'ui.noscript': 'This page needs JavaScript. Please enable JavaScript and reload.',
+    'ui.repo': 'GitHub repository (ipusiron/perceptron-otp-visualizer)',
+    'theme.toLight': 'Switch to light mode',
+    'theme.toDark': 'Switch to dark mode',
+
+    'tab.nand': '① NAND universality',
+    'tab.gates': '② Perceptron gates',
+    'tab.xor': '③ Perceptron XOR',
+    'tab.otp': '④ Perceptron OTP',
+    'tab.glossary': '⑤ Glossary',
+
+    'gate.not': 'NOT gate',
+    'gate.and': 'AND gate',
+    'gate.or': 'OR gate',
+    'gate.nand': 'NAND gate',
+    'gate.xor': 'XOR gate',
+    'svg.nand': 'NAND gate symbol (inputs a and b, output z)',
+    'svg.not': 'NOT circuit: a single NAND with a on both inputs',
+    'svg.and': 'AND circuit: the output t of NAND(a, b) feeds both inputs of a second NAND',
+    'svg.or': 'OR circuit: the output t of NAND(a, a) and the output s of NAND(b, b) are joined by a third NAND',
+    'svg.xor': 'XOR circuit: the output s of NAND(a, b) feeds NAND(a, s) and NAND(b, s), and a fourth NAND joins their outputs',
+    'svg.pnot': 'NOT perceptron: weight −1, bias +0.5, step function',
+    'svg.pand': 'AND perceptron: weights +1 and +1, bias −1.5, step function',
+    'svg.por': 'OR perceptron: weights +1 and +1, bias −0.5, step function',
+    'svg.pnand': 'NAND perceptron: weights −1 and −1, bias +1.5, step function',
+    'svg.mlp': 'Two-layer perceptron: OR and NAND in layer 1, AND in layer 2',
+    'table.rowHint': 'Select a row of a table to update the values in the diagram on the right (below on phones). Enter and Space also select a row.',
+
+    'nand.title': 'NAND universality',
+    'nand.lead': 'NAND alone can build **NOT, AND, OR and XOR** (NAND is functionally complete). Select a row of a table to update the values in the circuit.',
+    'nand.refTitle': 'The NAND gate',
+    'nand.basic': '1. Basic gates',
+    'nand.composite': '2. Composite gate',
+    'nand.not.desc': 'Feeding the same value into both inputs of a NAND gives NOT.\nNOT(a) = NAND(a, a)',
+    'nand.and.desc': 'Passing the output of a NAND through another NAND (both inputs equal, that is, NOT) gives AND. Two NAND gates.\n'
+      + 'AND(a, b) = NAND(t, t), where t = NAND(a, b)',
+    'nand.or.desc': 'Inverting a and b (NAND(a, a) and NAND(b, b)) and joining them with a NAND gives OR. Three NAND gates.\n'
+      + 'OR(a, b) = NAND(t, s), where t = NAND(a, a), s = NAND(b, b)',
+    'nand.xor.desc': 'Four NAND gates make XOR. The output s of the first NAND feeds one input of two other NANDs, and a last NAND joins their outputs.\n'
+      + 'XOR(a, b) = NAND(t, u), where s = NAND(a, b), t = NAND(a, s), u = NAND(b, s)',
+    'nand.summary': 'Truth table of each gate (summary)',
+
+    'gates.title': 'Building basic gates with perceptrons',
+    'gates.lead': 'A single-layer perceptron (one threshold unit) can make NOT, AND, OR and NAND. '
+      + 'It adds a bias to the weighted sum of the inputs and passes the result through a step function.\n'
+      + 'Step function: 1 if the value is 0 or more, 0 if it is negative (the value at 0 differs between texts: 0, 1/2 or 1; this tool uses 1).',
+    'gates.basic': '1. Basic perceptron gates',
+    'gates.not.desc': 'A negative weight (−1) and a positive bias (+0.5) invert the input.\nNOT(a) = step(−a + 0.5)',
+    'gates.and.desc': 'Positive weights (+1, +1) and a bias of −1.5 make the sum 0 or more only when both inputs are 1.\nAND(a, b) = step(a + b − 1.5)',
+    'gates.or.desc': 'A bias of −0.5 makes the sum 0 or more when either input is 1.\nOR(a, b) = step(a + b − 0.5)',
+    'gates.nand.desc': 'Flipping the signs of the AND weights and bias inverts the output and gives NAND.\nNAND(a, b) = step(−a − b + 1.5)',
+    'gates.summary': 'Truth table of each gate (summary)',
+    'gates.xorNote': 'Only XOR cannot be made by a single layer, whatever weights and bias you choose. '
+      + 'Among the four points (0,0) (0,1) (1,0) (1,1), no single straight line separates the two points with output 1 from the two with output 0 '
+      + '(XOR is not linearly separable). → see ③',
+
+    'xor.title': 'Building XOR with a two-layer perceptron',
+    'xor.lead': 'XOR is not linearly separable, so a single-layer perceptron cannot make it. '
+      + 'Computing OR and NAND in the first layer and the AND of the two in the second layer gives XOR.',
+    'xor.notebook': 'Python implementation of the perceptron gates and decision-boundary plots (Jupyter Notebook)',
+    'xor.layers': '1. Multi-layer perceptron XOR',
+    'xor.card': 'XOR with two layers',
+    'xor.desc': 'The first layer computes h1 = OR(a, b) and h2 = NAND(a, b), and the second layer takes AND(h1, h2). Every gate is a perceptron from ②.\n'
+      + 'XOR(a, b) = AND(OR(a, b), NAND(a, b))',
+    'xor.summary': 'Truth table of XOR (summary)',
+    'th.layer1Or': 'Layer 1 OR (h1)',
+    'th.layer1Nand': 'Layer 1 NAND (h2)',
+    'th.layer2And': 'Layer 2 AND (output)',
+    'th.compare': 'a ^ b (check)',
+
+    'otp.title': 'Perceptron OTP',
+    'otp.lead': 'This tab applies the two-layer perceptron XOR from ③ to each of the 8 bits of every byte to encrypt and decrypt with a one-time pad (OTP). '
+      + 'Encryption and decryption are the same computation (C = P ⊕ K, P = C ⊕ K).',
+    'otp.mode': 'Mode',
+    'otp.encrypt': 'Encrypt',
+    'otp.decrypt': 'Decrypt',
+    'otp.inputPlain': 'Plaintext P',
+    'otp.inputCipher': 'Ciphertext C',
+    'otp.format': 'Format',
+    'otp.fmtText': 'Text (UTF-8)',
+    'otp.fmtHex': 'Hex',
+    'otp.key': 'Key K',
+    'otp.runEncrypt': 'Encrypt (C = P ⊕ K)',
+    'otp.runDecrypt': 'Decrypt (P = C ⊕ K)',
+    'otp.keyRandom': 'Make a random key',
+    'otp.sample': 'Load the example',
+    'otp.info': '{n} bytes   hex: {hex}',
+    'otp.infoLong': '{n} bytes   hex: {hex} ...',
+    'otp.keyMade': 'Made a random key of {n} bytes, the same length as the {field} (crypto.getRandomValues).',
+    'otp.sampleSet': 'Loaded the example (plaintext HELLO, key XMCKL).',
+    'otp.sampleSetDecrypt': 'Loaded the example (ciphertext 10 08 0F 07 03, key XMCKL; it decrypts to HELLO).',
+    'otp.note': 'An OTP gives perfect secrecy only when the key is uniformly random, at least as long as the plaintext (the same length in an OTP), '
+      + 'used only once and shared in secret. It protects confidentiality only: flipping a bit of the ciphertext flips the same bit of the plaintext '
+      + '(it does not stop tampering). The example key XMCKL uses capital letters only and is not a random key.',
+    'otp.related': 'For key reuse attacks, perfect secrecy and tampering experiments, see OTP Animation',
+    'otp.resultEncrypt': 'Encryption result',
+    'otp.resultDecrypt': 'Decryption result',
+    'otp.outHex': 'Hex',
+    'otp.outText': 'Text (read as UTF-8)',
+    'otp.toDecrypt': 'Decrypt this ciphertext',
+    'otp.movedToDecrypt': 'The ciphertext (hex) and the key are now the decryption input. Press "Decrypt".',
+    'otp.check': 'The perceptron XOR and the JavaScript operator ^ gave the same result for all {n} bytes.',
+    'otp.checkNg': 'The perceptron XOR and the operator ^ differ in {m} of {n} bytes.',
+    'otp.warnInvalid': 'Some bytes are not valid UTF-8 (shown as replacement characters in the text). Check the exact values in hex.',
+    'otp.warnControl': 'There are {n} control characters (line feeds, CR and so on). Copying them as text may change them, so pass the data in hex.',
+    'otp.viz': 'Bit-by-bit computation (each byte, MSB→LSB)',
+    'otp.vizLead': 'For each bit, layer 1 computes h1 = OR(x, k) and h2 = NAND(x, k), and layer 2 computes output = AND(h1, h2) '
+      + '(x is an input bit and k a key bit).',
+    'otp.vizByte': 'Byte {i}: input {x}, key {k} → output {y}',
+    'otp.vizMore': 'Only the first {shown} bytes are shown ({n} bytes in total).',
+    'otp.vizTableLabel': 'Bit-by-bit computation of byte {i}',
+    'byte.ascii': '0x{hex} ("{ch}")',
+    'byte.space': '0x{hex} (space)',
+    'byte.control': '0x{hex} (control character U+{cp})',
+    'byte.part': '0x{hex} (byte {part}/{size} of "{ch}")',
+    'byte.invalid': '0x{hex} (not valid UTF-8)',
+    'field.plain': 'plaintext',
+    'field.cipher': 'ciphertext',
+    'field.key': 'key',
+
+    'err.empty': 'The {field} is empty.',
+    'err.lengthMismatch': 'The key must have the same number of bytes as the {field} ({field}: {a} bytes, key: {b} bytes). '
+      + '"Make a random key" makes one of the right length.',
+    'err.hexChar': 'Character {pos} of the {field} hex, "{char}", cannot be read (only 0-9, A-F and separators).',
+    'err.hexOdd': 'The {field} hex has an odd number of digits (one byte is two digits).',
+    'err.tooLong': 'The {field} is too long ({n} bytes; the limit is {max} bytes).',
+    'err.randomNeedsInput': 'Enter the {field} first (the key gets the same number of bytes).',
+
+    'bench.title': 'Speed comparison',
+    'bench.lead': 'This repeats the XOR of two random 10,000-byte inputs with the JavaScript operator ^ and with the perceptron XOR, '
+      + 'and compares the time per byte (about 0.1 seconds each).',
+    'bench.run': 'Measure',
+    'bench.running': 'Measuring...',
+    'bench.colMethod': 'Method',
+    'bench.colPerByte': 'Per byte',
+    'bench.colReps': 'Repetitions',
+    'bench.native': 'Operator ^',
+    'bench.perceptron': 'Perceptron XOR',
+    'bench.nsValue': '{v} ns',
+    'bench.repsValue': '{n}',
+    'bench.ratio': 'The perceptron XOR took about {x} times as long as the operator ^.',
+    'bench.equal': 'The results matched for all {n} bytes.',
+    'bench.notEqual': 'The results do not match.',
+    'bench.note': 'Times depend on the device and browser. Each method is repeated until the time is well above the resolution of performance.now() '
+      + '(0.1 ms in Chromium, 1 ms in Firefox and Safari) and then divided by the number of repetitions.',
+
+    'gl.title': 'Glossary',
+    'gl.search': 'Search terms',
+    'gl.searchPlaceholder': 'e.g. XOR',
+    'gl.filterLabel': 'Filter by field',
+    'gl.count': '{n} terms',
+    'gl.none': 'No terms found.',
+    'cat.all': 'All',
+    'cat.crypto': 'Cryptography',
+    'cat.logic': 'Logic',
+    'cat.ml': 'Machine learning',
+    'cat.bit': 'CS basics',
+
+    'gl.otp.term': 'OTP (one-time pad)',
+    'gl.otp.desc': 'A cipher that XORs the plaintext with a uniformly random key of the same length. '
+      + 'With the key used only once and shared in secret, it gives perfect secrecy. Distributing and managing the keys is the practical difficulty.',
+    'gl.otp.link': 'Open OTP Animation',
+    'gl.perfect.term': 'Perfect secrecy',
+    'gl.perfect.desc': 'The property that the ciphertext reveals nothing about the plaintext. Defined by Shannon (1949). '
+      + 'It needs a uniformly random key, at least as long as the plaintext (the same length in an OTP), used once and shared in secret.',
+    'gl.vernam.term': 'Vernam cipher',
+    'gl.vernam.desc': 'A cipher that XORs the plaintext with the key bit by bit, from Vernam\'s patent (granted in 1919). '
+      + 'Accounts differ on whether Vernam or Mauborgne proposed using each key only once (the OTP). '
+      + 'Earlier, in 1882, Frank Miller had published a one-time pad system.',
+    'gl.strength.term': 'Cipher strength',
+    'gl.strength.desc': 'The computation or cost an attacker needs to break a cipher. '
+      + 'An OTP is secure regardless of computing power (information-theoretically secure), but it protects confidentiality only and does not stop tampering.',
+    'gl.malleable.term': 'Malleability',
+    'gl.malleable.desc': 'The property that changing the ciphertext changes the decrypted plaintext in a predictable way. '
+      + 'In an OTP, flipping a bit of the ciphertext flips the same bit of the plaintext. Detecting tampering needs another mechanism, such as a MAC.',
+    'gl.keymgmt.term': 'Key management',
+    'gl.keymgmt.desc': 'How keys are generated, distributed, stored and destroyed. '
+      + 'An OTP needs a key as long as the plaintext shared in advance, which is its biggest practical problem.',
+    'gl.random.term': 'Randomness',
+    'gl.random.desc': 'An essential part of cryptography. Unpredictable random numbers must be told apart from pseudorandom numbers made by a fixed procedure. '
+      + 'This tool makes keys with crypto.getRandomValues.',
+    'gl.prng.term': 'Pseudorandom number generator (PRNG)',
+    'gl.prng.desc': 'A fixed procedure that produces numbers that look random. '
+      + 'Cryptography uses cryptographically secure ones (CSPRNGs), whose next output cannot be predicted from earlier outputs.',
+    'gl.shannon.term': 'Claude Shannon',
+    'gl.shannon.desc': 'The father of information theory. His 1949 paper defined perfect secrecy and showed that the number of keys must be at least '
+      + 'the number of plaintexts, and that the Vernam system (the OTP) achieves it.',
+    'gl.compsec.term': 'Computational security',
+    'gl.compsec.desc': 'Security based on computational problems believed to be infeasible to solve in practice. '
+      + 'Most ciphers in everyday use rely on it. It is distinct from the information-theoretic security of an OTP.',
+    'gl.lsb.term': 'LSB (least significant bit)',
+    'gl.lsb.desc': 'The lowest bit: the rightmost bit of a bit string, with the smallest weight.',
+    'gl.msb.term': 'MSB (most significant bit)',
+    'gl.msb.desc': 'The highest bit: the leftmost bit of a bit string, with the largest weight.',
+    'gl.xor.term': 'XOR (exclusive OR)',
+    'gl.xor.desc': '1 when two bits differ and 0 when they are equal: a ⊕ b. XORing twice with the same value restores the original ((P ⊕ K) ⊕ K = P), '
+      + 'so encryption and decryption are the same computation.',
+    'gl.truth.term': 'Truth table',
+    'gl.truth.desc': 'A table of the output of a logical expression for every combination of inputs.',
+    'gl.gate.term': 'Logic gate',
+    'gl.gate.desc': 'A basic circuit that outputs the result of a fixed logical operation on inputs of 0 and 1, such as AND, OR, NOT, NAND and XOR.',
+    'gl.nand.term': 'NAND and functional completeness',
+    'gl.nand.desc': 'The negation of AND. NAND alone can express any logical function (functional completeness). '
+      + 'It became widely known through Sheffer (1913), whose stroke meant NOR; Nicod (1917) used it as NAND, and Stamm (1911) published the result earlier.',
+    'gl.boolean.term': 'Boolean algebra',
+    'gl.boolean.desc': 'An algebraic system for logical operations, the mathematics behind logic gates and truth tables.',
+    'gl.neuron.term': 'Neuron',
+    'gl.neuron.desc': 'A biological nerve cell. It receives several input signals and fires when they exceed a certain strength. '
+      + 'It inspired the artificial neuron.',
+    'gl.perceptron.term': 'Perceptron',
+    'gl.perceptron.desc': 'A model of an artificial neuron proposed by Rosenblatt (1958). It adds a bias to the weighted sum of the inputs '
+      + 'and outputs 0 or 1 through a step function (the activation function). '
+      + 'A single layer can only solve linearly separable problems; XOR needs more layers.',
+    'gl.learning.term': 'Perceptron learning rule',
+    'gl.learning.desc': 'A rule that corrects the weights after a wrong output (w ← w + η(t − y)x). '
+      + 'For linearly separable data it converges after a finite number of updates (Novikoff, 1962); for non-separable data such as XOR it does not converge. '
+      + 'The weights in this tool are set by hand, not learned.',
+    'gl.ai.term': 'Artificial intelligence (AI)',
+    'gl.ai.desc': 'The field that tries to realize human intelligence with machines, including reasoning, learning, '
+      + 'recognition and natural language processing. Machine learning and deep learning are parts of it.',
+    'gl.ml.term': 'Machine learning (ML)',
+    'gl.ml.desc': 'Methods that learn patterns from data to predict or classify, with many algorithms such as perceptrons, '
+      + 'decision trees and support vector machines.',
+    'gl.dl.term': 'Deep learning',
+    'gl.dl.desc': 'Machine learning with multi-layer neural networks. Many hidden layers learn complex features automatically. '
+      + 'It greatly improved image recognition, natural language processing and speech recognition.',
+    'gl.linsep.term': 'Linear separability',
+    'gl.linsep.desc': 'The property that one straight line (or plane) can split the input space into the two groups. '
+      + 'Of the 16 two-input logical functions, only XOR and XNOR are not linearly separable.',
+    'gl.step.term': 'Step function (Heaviside step function)',
+    'gl.step.desc': 'A function that returns 1 for inputs of 0 or more and 0 for negative inputs (the definition in this tool; '
+      + 'the value at 0 differs between texts: 0, 1/2 or 1). The activation function of a perceptron.',
+    'gl.activation.term': 'Activation function',
+    'gl.activation.desc': 'The function that turns the weighted sum of a neuron\'s inputs into its output, such as the step function, the sigmoid or ReLU.',
+    'gl.mlp.term': 'Multi-layer perceptron (MLP)',
+    'gl.mlp.desc': 'A model with perceptrons connected in layers. It can handle problems that are not linearly separable, which a single layer cannot. '
+      + 'The XOR in this tool has two layers.',
+    'gl.linclass.term': 'Linear classifier',
+    'gl.linclass.desc': 'A model that decides by splitting the input space with one straight line (or plane). '
+      + 'A single-layer perceptron is a linear classifier and is not enough for problems such as XOR that no single line can split.'
+  };
+
+  const MESSAGES = { ja, en };
+
+  function t(key, vars = {}, lang) {
+    const dict = MESSAGES[lang || (globalThis.PotpI18n && globalThis.PotpI18n.lang) || 'ja'] || ja;
+    let text = Object.prototype.hasOwnProperty.call(dict, key) ? dict[key] : key;
+    for (const [k, v] of Object.entries(vars)) text = text.split(`{${k}}`).join(String(v));
+    return text;
+  }
+
+  // 用語集の並びと分野（キーは gl.<id>.term・gl.<id>.desc。link があればそのページへのリンクも出す）
+  const GLOSSARY = [
+    { id: 'otp', category: 'crypto', link: 'https://ipusiron.github.io/otp-animation/' },
+    { id: 'perfect', category: 'crypto' },
+    { id: 'vernam', category: 'crypto' },
+    { id: 'strength', category: 'crypto' },
+    { id: 'malleable', category: 'crypto' },
+    { id: 'keymgmt', category: 'crypto' },
+    { id: 'random', category: 'crypto' },
+    { id: 'prng', category: 'crypto' },
+    { id: 'shannon', category: 'crypto' },
+    { id: 'compsec', category: 'crypto' },
+    { id: 'lsb', category: 'bit' },
+    { id: 'msb', category: 'bit' },
+    { id: 'xor', category: 'bit' },
+    { id: 'truth', category: 'logic' },
+    { id: 'gate', category: 'logic' },
+    { id: 'nand', category: 'logic' },
+    { id: 'boolean', category: 'logic' },
+    { id: 'neuron', category: 'ml' },
+    { id: 'perceptron', category: 'ml' },
+    { id: 'learning', category: 'ml' },
+    { id: 'ai', category: 'ml' },
+    { id: 'ml', category: 'ml' },
+    { id: 'dl', category: 'ml' },
+    { id: 'linsep', category: 'ml' },
+    { id: 'step', category: 'ml' },
+    { id: 'activation', category: 'ml' },
+    { id: 'mlp', category: 'ml' },
+    { id: 'linclass', category: 'ml' }
+  ];
+
+  globalThis.PotpMessages = { MESSAGES, GLOSSARY, t };
+})();
