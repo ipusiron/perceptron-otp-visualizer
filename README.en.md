@@ -54,6 +54,10 @@ You can try it directly in your browser.
 >
 >*Glossary (filtered to cryptography)*
 
+>![The 16 two-input logical functions and the one-time pad](assets/en/screenshot8.png)
+>
+>*Of the 16 two-input logical functions, only XOR and XNOR are usable for an OTP (XNOR selected; no single line separates the points)*
+
 ---
 
 ## ✨ Features
@@ -85,7 +89,14 @@ You can try it directly in your browser.
 - The bit-by-bit computation (input, key, h1 = OR, h2 = NAND, output = AND) for the first 16 bytes, including which character and which byte of it each byte is
 - A speed comparison of the operator `^` and the perceptron XOR (time per byte)
 
-### ⑤ Glossary
+### ⑤ 16 functions and OTP
+
+- A table of the 16 two-input logical functions: single layer or not (with example weights and bias), decryptable, perfectly secret, usable for an OTP
+- Selecting a row updates the four points of the input plane with the separating line, the probability that C = 1 and the verdict (keys also work)
+- An experiment that makes a ciphertext from the plaintext and the key with the selected function and shows, as 0, 1 and ?, the bits that cannot be recovered with the key and the plaintext bits determined without the key
+- Why a single layer cannot make XOR (inequalities)
+
+### ⑥ Glossary
 
 - 29 terms in cryptography, logic, machine learning and CS basics. Search by keyword and filter by field
 - Definitions are checked against primary sources (Shannon's paper, HAC, textbooks, OEIS and others)
@@ -107,7 +118,8 @@ You can try it directly in your browser.
 5. In ④, press "Load the example" and then "Encrypt". The ciphertext (hex) and the bit-by-bit computation appear.
 6. Press "Decrypt this ciphertext" to make the ciphertext (hex) and the key the decryption input. "Decrypt" restores the original plaintext.
 7. To try your own text, enter the plaintext and press "Make a random key".
-8. Look up the terms you met in the ⑤ glossary.
+8. In ⑤, select rows of the table of the 16 logical functions and see which can be used for a one-time pad. Selecting AND or C = P changes the experiment results.
+9. Look up the terms you met in the ⑥ glossary.
 
 ---
 
@@ -130,6 +142,55 @@ The example key `XMCKL` in this tool uses capital letters only and is not a rand
 
 ---
 
+## 🧮 The 16 functions and the one-time pad
+
+There are 16 logical functions of two inputs. Which of them, used as the function C = f(P, K) that makes the ciphertext C from the plaintext P and the key K, gives a one-time pad? The ⑤ tab lists the 16 from three points of view.
+
+- Decryptable with the key: for every key, P maps to C one-to-one (f(0, k) ≠ f(1, k))
+- Perfectly secret: with a uniformly random key, the probability that C = 1 does not depend on P
+- Single layer: expressible as step(w1·P + w2·K + b) (linearly separable)
+
+| No. | Truth table | Function | Single layer (weight, weight, bias) | Decryptable | Perfectly secret | Usable for OTP |
+|---|---|---|---|---|---|---|
+| 0 | 0000 | Always 0 (FALSE) | Yes (0, 0, -0.5) | No | Yes | No |
+| 1 | 0001 | AND | Yes (1, 1, -1.5) | No | No | No |
+| 2 | 0010 | P∧¬K | Yes (1, -1, -0.5) | No | No | No |
+| 3 | 0011 | P | Yes (1, 0, -0.5) | Yes | No | No |
+| 4 | 0100 | ¬P∧K | Yes (-1, 1, -0.5) | No | No | No |
+| 5 | 0101 | K | Yes (0, 1, -0.5) | No | Yes | No |
+| 6 | 0110 | XOR | No | Yes | Yes | Yes |
+| 7 | 0111 | OR | Yes (1, 1, -0.5) | No | No | No |
+| 8 | 1000 | NOR | Yes (-1, -1, 0.5) | No | No | No |
+| 9 | 1001 | XNOR | No | Yes | Yes | Yes |
+| 10 | 1010 | ¬K | Yes (0, -1, 0.5) | No | Yes | No |
+| 11 | 1011 | P∨¬K | Yes (1, -1, 0.5) | No | No | No |
+| 12 | 1100 | ¬P | Yes (-1, 0, 0.5) | Yes | No | No |
+| 13 | 1101 | ¬P∨K | Yes (-1, 1, 0.5) | No | No | No |
+| 14 | 1110 | NAND | Yes (-1, -1, 1.5) | No | No | No |
+| 15 | 1111 | Always 1 (TRUE) | Yes (0, 0, 0.5) | No | Yes | No |
+
+**Only XOR and XNOR are both decryptable and perfectly secret, and these two are exactly the ones a single-layer perceptron cannot make.** Building the combining function of a one-time pad with perceptrons therefore needs two layers, as in ③. This is the result of checking all 16 two-input functions; it is not generalized to other numbers of inputs or to other ciphers.
+
+Why a single layer cannot make XOR can be shown with inequalities. If it could, f(0,0) = 0 gives b < 0, f(1,1) = 0 gives w1 + w2 + b < 0, and f(0,1) = 1 and f(1,0) = 1 give w2 + b ≥ 0 and w1 + b ≥ 0. Adding the last two gives w1 + w2 + 2b ≥ 0, so w1 + w2 + b ≥ −b > 0, which contradicts the second.
+
+The experiment in the ⑤ tab makes a ciphertext from the plaintext and the key with the selected function, and counts the bits that cannot be recovered with the key and the plaintext bits that are determined without the key. The example uses the plaintext HELLO and the key XMCKL (40 bits).
+
+| Function | Ciphertext C (hex) | Bits not recoverable with the key | Plaintext bits determined without the key |
+|---|---|---|---|
+| XOR | 10 08 0F 07 03 | 0 / 40 | 0 / 40 |
+| XNOR | EF F7 F0 F8 FC | 0 / 40 | 0 / 40 |
+| P | 48 45 4C 4C 4F | 0 / 40 | 40 / 40 |
+| K | 58 4D 43 4B 4C | 40 / 40 | 0 / 40 |
+| AND | 48 45 40 48 4C | 23 / 40 | 11 / 40 |
+| OR | 58 4D 4F 4F 4F | 17 / 40 | 18 / 40 |
+
+- XOR and XNOR recover every bit with the key, and without the key not a single bit is determined
+- C = P can be decrypted with the key, but the ciphertext is the plaintext itself
+- C = K carries no information about the plaintext, so it cannot be decrypted even with the key
+- With AND, a 1 in the ciphertext reveals a 1 in the plaintext, and the bits where the key is 0 cannot be recovered even with the key
+
+---
+
 ## 🎯 Use cases
 
 ### Learning and teaching
@@ -138,6 +199,7 @@ The example key `XMCKL` in this tool uses capital letters only and is not a rand
 - In an introduction to machine learning, read the weights and biases in ② and see that "weighted sum + bias → step function" becomes a gate. In ③, see that XOR, which one layer cannot make, can be made with two
 - In an introduction to security, use the bit-by-bit computation in ④ to see that XOR makes encryption and decryption the same computation ((P ⊕ K) ⊕ K = P). Learn the danger of key reuse together with OTP Animation
 - For self-study, put the notebook (Python) next to the page and compare the same gates made with different weights
+- In a cryptography class, think about "why a one-time pad uses XOR" with the table in ⑤. The experiment shows that AND and OR cannot be decrypted or leak the plaintext, and that C = K cannot be decrypted
 
 ### At work
 
@@ -165,8 +227,8 @@ The author intends this as a tool for learning and understanding and does not en
 
 ### Files
 
-- `js/potp-core.js`: the computation (no DOM). NAND gates, single-layer perceptrons, two-layer XOR, byte XOR, hex parsing, UTF-8 checks, random keys and the speed comparison
-- `js/app.js`: the page (tabs, table rows, OTP input and output, bit view, glossary)
+- `js/potp-core.js`: the computation (no DOM). NAND gates, single-layer perceptrons, two-layer XOR, byte XOR, hex parsing, UTF-8 checks, random keys, the speed comparison, and the checks and experiment for the 16 two-input logical functions
+- `js/app.js`: the page (tabs, table rows, OTP input and output, bit view, the table of the 16 functions and the input plane, glossary)
 - `js/messages.js`: Japanese and English text and the glossary order
 - `js/i18n.js`, `js/theme.js` and `js/theme-init.js`: language and theme switching
 
@@ -247,6 +309,7 @@ The XOR of two random 10,000-byte inputs is repeated for at least 0.1 seconds pe
 - The example key `XMCKL` is not a random key
 - Each input is limited to 65,536 bytes, and the bit-by-bit computation shows the first 16 bytes
 - The speed comparison depends on the device, the browser and the load at the time
+- The conclusion about the 16 functions comes from checking every two-input logical function. It is not generalized to other numbers of inputs or to other ciphers
 - The text output field cannot show control characters and invalid bytes correctly. Check the exact values in hex
 
 ---
@@ -259,7 +322,7 @@ npm test
 
 - Runs with `node --test` on Node.js 22 or later. There are no dependencies
 - GitHub Actions runs the tests on every push and pull request
-- The tests check the computation (gates, perceptrons, XOR for all 256×256 byte pairs, hex, UTF-8, round trips), the HTML (CSP, tab structure, table values, diagram weights), the text (Japanese/English keys, writing rules), the colors (contrast), the formatting, and the tables and examples in the READMEs
+- The tests check the computation (gates, perceptrons, XOR for all 256×256 byte pairs, hex, UTF-8, round trips, the 16 functions), the HTML (CSP, tab structure, table values, diagram weights), the text (Japanese/English keys, writing rules), the colors (contrast), the formatting, and the tables and examples in the READMEs
 
 ---
 
@@ -304,14 +367,16 @@ perceptron-otp-visualizer/
 │   │   ├── screenshot4.png             # XOR from four NAND gates
 │   │   ├── screenshot5.png             # AND with a single-layer perceptron
 │   │   ├── screenshot6.png             # Dark mode
-│   │   └── screenshot7.png             # Glossary
+│   │   ├── screenshot7.png             # Glossary
+│   │   └── screenshot8.png             # The 16 functions and OTP
 │   ├── screenshot.png                  # Two-layer XOR (Japanese page)
 │   ├── screenshot2.png                 # Encrypting HELLO and the bit view (Japanese page)
 │   ├── screenshot3.png                 # Encrypting café (Japanese page)
 │   ├── screenshot4.png                 # XOR from four NAND gates (Japanese page)
 │   ├── screenshot5.png                 # AND with a perceptron (Japanese page)
 │   ├── screenshot6.png                 # Dark mode (Japanese page)
-│   └── screenshot7.png                 # Glossary (Japanese page)
+│   ├── screenshot7.png                 # Glossary (Japanese page)
+│   └── screenshot8.png                 # The 16 functions and OTP (Japanese page)
 ├── js/                                 # Page and computation scripts
 │   ├── app.js                          # The page (tabs, tables, OTP, glossary)
 │   ├── i18n.js                         # Language choice and static text
@@ -336,7 +401,7 @@ perceptron-otp-visualizer/
 ├── LICENSE                             # MIT license
 ├── README.en.md                        # English README (this file)
 ├── README.md                           # Japanese README
-├── index.html                          # The page (five tabs)
+├── index.html                          # The page (six tabs)
 ├── package.json                        # npm test settings (no dependencies)
 └── style.css                           # Colors (light/dark) and layout
 ```
