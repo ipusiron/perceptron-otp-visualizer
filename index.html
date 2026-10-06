@@ -31,7 +31,8 @@
       <button type="button" class="tab-btn" role="tab" id="tab-gates" aria-controls="panel-gates" aria-selected="false" tabindex="-1" data-i18n="tab.gates">② パーセプトロンでゲート</button>
       <button type="button" class="tab-btn" role="tab" id="tab-xor" aria-controls="panel-xor" aria-selected="false" tabindex="-1" data-i18n="tab.xor">③ パーセプトロンXOR</button>
       <button type="button" class="tab-btn" role="tab" id="tab-otp" aria-controls="panel-otp" aria-selected="false" tabindex="-1" data-i18n="tab.otp">④ パーセプトロンOTP</button>
-      <button type="button" class="tab-btn" role="tab" id="tab-glossary" aria-controls="panel-glossary" aria-selected="false" tabindex="-1" data-i18n="tab.glossary">⑤ 用語集</button>
+      <button type="button" class="tab-btn" role="tab" id="tab-functions" aria-controls="panel-functions" aria-selected="false" tabindex="-1" data-i18n="tab.functions">⑤ 16の関数とOTP</button>
+      <button type="button" class="tab-btn" role="tab" id="tab-glossary" aria-controls="panel-glossary" aria-selected="false" tabindex="-1" data-i18n="tab.glossary">⑥ 用語集</button>
     </div>
 
     <!-- ① NAND ユニバーサル -->
@@ -814,7 +815,70 @@
       </details>
     </section>
 
-    <!-- ⑤ 用語集 -->
+    <!-- ⑤ 16の関数と OTP -->
+    <section id="panel-functions" class="tab-panel" role="tabpanel" aria-labelledby="tab-functions" tabindex="0" hidden>
+      <h2 data-i18n="fn.title">16の論理関数とワンタイムパッド</h2>
+      <p data-i18n="fn.lead">2入力の論理関数は16個あります。平文Pと鍵Kから暗号文Cを作る関数C = f(P, K)に、どれを使えばワンタイムパッドになるでしょうか。表の行を選ぶと、下の図と実験が変わります。</p>
+      <ul class="fn-criteria">
+        <li data-i18n="fn.critInv">鍵で戻せる：どの鍵でも、PからCへの対応が1対1（f(0, k) ≠ f(1, k)）</li>
+        <li data-i18n="fn.critSecret">完全秘匿：鍵が一様な乱数のとき、C = 1になる確率がPによらない</li>
+        <li data-i18n="fn.critSep">単層で作れる：step(w1·P + w2·K + b)で表せる（線形分離できる）</li>
+      </ul>
+      <p class="row-hint" data-i18n="fn.rowHint">行を選ぶと、入力の平面の図と実験が変わります。Enterキー・スペースキー・上下の矢印キーでも選べます。</p>
+      <div class="table-wrap">
+        <table class="fn-table" id="fn-table">
+          <thead>
+            <tr><th data-i18n="fn.colNo">番号</th><th>f(0,0)</th><th>f(0,1)</th><th>f(1,0)</th><th>f(1,1)</th><th data-i18n="fn.colName">関数</th>
+              <th data-i18n="fn.colSep">単層で作れる（重み・バイアスの例）</th><th data-i18n="fn.colInv">鍵で戻せる</th><th data-i18n="fn.colSecret">完全秘匿</th><th data-i18n="fn.colOtp">OTPに使える</th></tr>
+          </thead>
+          <tbody id="fn-body"></tbody>
+        </table>
+      </div>
+      <p class="fn-result" data-i18n="fn.result">16個のうち、鍵で戻せて完全秘匿にもなるのは<strong>XORとXNORの2つだけ</strong>です。そしてこの2つだけが、単層のパーセプトロンでは作れません。ワンタイムパッドの組み合わせの関数をパーセプトロンで作るには、③のように2層が要ります（2入力の16個を全部調べた結果です）。</p>
+
+      <div class="neuron-card fn-detail">
+        <h3 id="fn-detail-title">XOR</h3>
+        <div class="fn-detail-body">
+          <svg id="fn-plane" class="fn-plane" role="img" viewBox="0 0 200 200" width="200" height="200" aria-label="XOR"></svg>
+          <div class="fn-detail-text" aria-live="polite">
+            <p id="fn-detail-sep"></p>
+            <p id="fn-detail-prob"></p>
+            <p id="fn-detail-verdict"></p>
+          </div>
+        </div>
+
+        <h4 data-i18n="fn.expTitle">実験：この関数で暗号化する</h4>
+        <p class="explanation" data-i18n="fn.expLead">平文の各ビットと鍵の各ビットに選んだ関数を使って、暗号文を作ります。鍵で戻せないビットと、鍵がなくても決まる平文のビットを数えます。</p>
+        <div class="field">
+          <label for="fn-plain" data-i18n="fn.plain">平文P（テキスト）</label>
+          <textarea id="fn-plain" rows="2" spellcheck="false" autocomplete="off"></textarea>
+          <p class="field-info" id="fn-plain-info" aria-live="polite"></p>
+        </div>
+        <p class="field-info" id="fn-key-info" aria-live="polite"></p>
+        <div class="controls">
+          <button type="button" id="fn-random-key" data-i18n="otp.keyRandom">乱数の鍵を作る</button>
+          <button type="button" id="fn-sample" data-i18n="fn.sample">例を入れる（HELLO・XMCKL）</button>
+        </div>
+        <dl class="fn-results" aria-live="polite">
+          <dt data-i18n="fn.cipher">暗号文C（16進数）</dt>
+          <dd id="fn-cipher"></dd>
+          <dt data-i18n="fn.recovered">鍵で戻した平文</dt>
+          <dd id="fn-recovered"></dd>
+          <dt data-i18n="fn.leak">鍵がなくても決まる平文のビット</dt>
+          <dd id="fn-leak"></dd>
+        </dl>
+      </div>
+
+      <details class="truth">
+        <summary data-i18n="fn.proofTitle">XORが単層で作れない理由</summary>
+        <p data-i18n="fn.proof">単層で作れるとすると、step(w1·P + w2·K + b)がXORになる重みとバイアスがあるはずです。
+          f(0,0) = 0からb &lt; 0、f(1,1) = 0からw1 + w2 + b &lt; 0、f(0,1) = 1とf(1,0) = 1からw2 + b ≥ 0とw1 + b ≥ 0です。
+          後ろの2つを足すとw1 + w2 + 2b ≥ 0なので、w1 + w2 + b ≥ −b &gt; 0となり、2つ目と食い違います。
+          XNORも同じように示せます。</p>
+      </details>
+    </section>
+
+    <!-- ⑥ 用語集 -->
     <section id="panel-glossary" class="tab-panel" role="tabpanel" aria-labelledby="tab-glossary" tabindex="0" hidden>
       <h2 data-i18n="gl.title">用語集</h2>
       <div class="glossary-controls">

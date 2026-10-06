@@ -796,7 +796,171 @@ textarea[readonly] {
   background: var(--panel);
 }
 
-/* ===== ⑤ 用語集 ===== */
+/* ===== ⑤ 16の関数と OTP ===== */
+.fn-criteria {
+  margin: 8px 0 12px;
+  padding-left: 1.4em;
+}
+
+.fn-criteria li {
+  margin: 4px 0;
+}
+
+.fn-table {
+  border-collapse: collapse;
+  background: var(--card);
+}
+
+.fn-table th,
+.fn-table td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.fn-table th {
+  background: var(--panel);
+  font-size: 14px;
+}
+
+.fn-table td {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.fn-table tbody tr {
+  cursor: pointer;
+}
+
+.fn-table tbody tr:hover {
+  background: var(--hover-bg);
+}
+
+.fn-table tbody tr.otp-row {
+  font-weight: 700;
+}
+
+.fn-table tbody tr.highlighted {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.fn-table tbody tr:focus-visible {
+  outline: 3px solid var(--accent-text);
+  outline-offset: -3px;
+}
+
+.fn-result {
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: var(--card);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+}
+
+.fn-detail {
+  margin-top: 16px;
+}
+
+.fn-detail-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  align-items: center;
+}
+
+.fn-plane {
+  flex-shrink: 0;
+  max-width: 100%;
+  height: auto;
+}
+
+.fn-detail-text {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.fn-detail-text p {
+  margin: 6px 0;
+}
+
+.fn-verdict {
+  font-weight: 700;
+}
+
+.fn-verdict.ok {
+  color: var(--accent-text);
+}
+
+.plane-frame {
+  fill: var(--card);
+  stroke: var(--border);
+}
+
+.plane-grid {
+  stroke: var(--border);
+  stroke-dasharray: 3 3;
+}
+
+.plane-line {
+  stroke: var(--accent-text);
+  stroke-width: 3;
+}
+
+.pt-one {
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.pt-zero {
+  fill: var(--card);
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+.pt-text-one,
+.pt-text-zero,
+.plane-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pt-text-one {
+  fill: var(--on-accent);
+}
+
+.pt-text-zero {
+  fill: var(--text);
+}
+
+.plane-label {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.fn-detail h4 {
+  margin: 20px 0 4px;
+  font-size: 16px;
+}
+
+.fn-results {
+  margin: 12px 0 0;
+}
+
+.fn-results dt {
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.fn-results dd {
+  margin: 2px 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  overflow-wrap: anywhere;
+}
+
+/* ===== ⑥ 用語集 ===== */
 .glossary-controls {
   display: flex;
   flex-direction: column;

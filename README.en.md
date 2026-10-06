@@ -87,7 +87,7 @@ You can try it directly in your browser.
 
 ### ⑤ Glossary
 
-- 28 terms in cryptography, logic, machine learning and CS basics. Search by keyword and filter by field
+- 29 terms in cryptography, logic, machine learning and CS basics. Search by keyword and filter by field
 - Definitions are checked against primary sources (Shannon's paper, HAC, textbooks, OEIS and others)
 
 ### Whole page

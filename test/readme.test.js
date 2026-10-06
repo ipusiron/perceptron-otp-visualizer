@@ -18,7 +18,7 @@ const DOCS = {
       '🛠️ このツールについて'],
     head: { weights: '| ゲート | 重み | バイアス | 式 |', nand: '| ゲート | NANDの個数 | 式 |', mlp: '| a | b | h1 = OR(a, b) |', otp: '| | テキスト | 16進数 |' },
     otpRows: ['平文P', '鍵K', '暗号文C = P ⊕ K'],
-    facts: ['そのうち14個です', 'XORとXNORの2つです', '65,536バイトまで', '先頭の16バイトまで', '用語集', '28語', '10,000バイトの乱数どうし', '0.1秒以上'],
+    facts: ['そのうち14個です', 'XORとXNORの2つです', '65,536バイトまで', '先頭の16バイトまで', '用語集', '29語', '10,000バイトの乱数どうし', '0.1秒以上'],
     project: 'https://akademeia.info/?page_id=42163',
     // 長音のない表記・「わかる」の漢字書き（分ける・分かれるは漢字のまま）・事実と食い違う古い記述
     forbidden: new RegExp(['ブラウザ(?!ー)', 'フォルダ(?!ー)', 'ディレクトリ(?!ー)', 'リポジトリ(?!ー)', 'ライブラリ(?!ー)', 'エディタ(?!ー)',
@@ -34,7 +34,7 @@ const DOCS = {
     head: { weights: '| Gate | Weights | Bias | Formula |', nand: '| Gate | NAND gates | Formula |', mlp: '| a | b | h1 = OR(a, b) |',
       otp: '| | Text | Hex |' },
     otpRows: ['Plaintext P', 'Key K', 'Ciphertext C = P ⊕ K'],
-    facts: ['express 14 of them', 'are XOR and XNOR', 'limited to 65,536 bytes', 'shows the first 16 bytes', '28 terms', 'two random 10,000-byte inputs',
+    facts: ['express 14 of them', 'are XOR and XNOR', 'limited to 65,536 bytes', 'shows the first 16 bytes', '29 terms', 'two random 10,000-byte inputs',
       'at least 0.1 seconds'],
     project: 'https://akademeia.info/?page_id=42163',
     forbidden: /MathJax|Subresource Integrity|X-Content-Type-Options|ideal for embedded|theoretically maximal|settings\.local\.json|words\.json|script\.js/i
@@ -157,11 +157,11 @@ test('ワンタイムパッドの例（HELLO ⊕ XMCKL と café ⊕ kkkkk）は
   }
 });
 
-test('README に書いた数（14個・65,536バイト・16バイト・28語・10,000バイト・0.1秒）は、計算部と画面の値に合う', () => {
+test('README に書いた数（14個・65,536バイト・16バイト・29語・10,000バイト・0.1秒）は、計算部と画面の値に合う', () => {
   for (const d of Object.values(DOCS)) for (const f of d.facts) assert.ok(d.text.includes(f), `${d.file}: ${f}`);
   assert.equal(C.MAX_BYTES, 65536);
   assert.equal(C.VIZ_BYTES, 16);
-  assert.equal(GLOSSARY.length, 28);
+  assert.equal(GLOSSARY.length, 29);
   assert.match(read('js/app.js'), /C\.bench\(\{ n: 10000, budgetMs: 100,/);
 });
 

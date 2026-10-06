@@ -9,7 +9,7 @@ const { MESSAGES, t } = load('js/messages.js').PotpMessages;
 const { parseVars } = load('js/i18n.js').PotpI18n;
 const SCRIPTS = ['js/theme-init.js', 'js/potp-core.js', 'js/messages.js', 'js/i18n.js', 'js/theme.js', 'js/app.js'];
 const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
-const TABS = ['nand', 'gates', 'xor', 'otp', 'glossary'];
+const TABS = ['nand', 'gates', 'xor', 'otp', 'functions', 'glossary'];
 
 test('CSP はスクリプト・スタイルを同じ場所のファイルだけに限り、unsafe-inline と外部の通信を許さない', () => {
   const csp = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
@@ -70,10 +70,12 @@ test('ボタンは type="button"。入力欄・選択欄には label がある�
   assert.doesNotMatch(html, /<details[^>]*aria-expanded/);
 });
 
-test('回路図・パーセプトロンの図（SVG）10枚は role="img" と名前を持つ', () => {
+test('回路図・パーセプトロンの図（SVG）10枚と入力の平面の図は role="img" と名前を持つ', () => {
   const svgs = [...html.matchAll(/<svg role="img" data-i18n-attr="aria-label:([a-z.]+)" aria-label="([^"]+)"/g)];
   assert.deepEqual(svgs.map((m) => m[1]), ['svg.nand', 'svg.not', 'svg.and', 'svg.or', 'svg.xor', 'svg.pnot', 'svg.pand', 'svg.por', 'svg.pnand', 'svg.mlp']);
-  assert.equal((html.match(/<svg/g) || []).length, svgs.length);
+  // 16関数のタブの入力の平面は、名前を JS が関数ごとに付ける
+  assert.match(html, /<svg id="fn-plane" class="fn-plane" role="img"/);
+  assert.equal((html.match(/<svg/g) || []).length, svgs.length + 1);
   for (const m of svgs) assert.equal(m[2], MESSAGES.ja[m[1]], m[1]);
 });
 

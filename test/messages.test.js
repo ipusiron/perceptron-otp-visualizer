@@ -40,7 +40,8 @@ test('日本語の文言は、日本語と英数字のあいだに半角空白�
 test('画面のスクリプトが使う文言のキーは、すべて辞書にある', () => {
   const src = read('js/app.js');
   const keys = new Set([...src.matchAll(/\bt\('([a-zA-Z0-9.-]+)'/g)].map((m) => m[1]));
-  for (const m of src.matchAll(/'((?:err|otp|field|bench|byte|gl|cat)\.[a-zA-Z0-9.]+)'/g)) keys.add(m[1]);
+  for (const m of src.matchAll(/'((?:err|otp|field|bench|byte|gl|cat|fn)\.[a-zA-Z0-9.]+)'/g)) keys.add(m[1]);
+  keys.add('fn.name.FALSE').add('fn.name.TRUE');
   assert.ok(keys.size >= 40, String(keys.size));
   for (const g of GLOSSARY) {
     keys.add(`gl.${g.id}.term`).add(`gl.${g.id}.desc`).add(`cat.${g.category}`);
@@ -49,9 +50,9 @@ test('画面のスクリプトが使う文言のキーは、すべて辞書に�
   for (const k of keys) for (const lang of ['ja', 'en']) assert.ok(MESSAGES[lang][k] !== undefined, `${lang} ${k}`);
 });
 
-test('用語集: 28語、分野は4つ、id は重ならず、辞書にない語がない', () => {
-  assert.equal(GLOSSARY.length, 28);
-  assert.equal(new Set(GLOSSARY.map((g) => g.id)).size, 28);
+test('用語集: 29語、分野は4つ、id は重ならず、辞書にない語がない', () => {
+  assert.equal(GLOSSARY.length, 29);
+  assert.equal(new Set(GLOSSARY.map((g) => g.id)).size, 29);
   assert.deepEqual([...new Set(GLOSSARY.map((g) => g.category))].sort(), ['bit', 'crypto', 'logic', 'ml']);
   const terms = Object.keys(MESSAGES.ja).filter((k) => /^gl\.[a-z]+\.term$/.test(k)).map((k) => k.split('.')[1]);
   assert.deepEqual(terms.sort(), GLOSSARY.map((g) => g.id).sort());
@@ -99,4 +100,16 @@ test('t は {name} を置き換え、ない鍵はキーをそのまま返す', (
   assert.equal(t('otp.info', { n: 5, hex: '48 45' }, 'en'), '5 bytes   hex: 48 45');
   assert.equal(t('err.lengthMismatch', { field: '平文', a: 5, b: 3 }, 'ja').startsWith('鍵は平文と同じバイト数'), true);
   assert.equal(t('no.such.key', {}, 'ja'), 'no.such.key');
+});
+
+test('16関数のタブの文言は、計算部の結果に合う（OTP に使えるのは XOR と XNOR だけで、単層で作れない2つと同じ）', () => {
+  const names = (pred) => C.FUNCTIONS.filter(pred).map((f) => f.name);
+  assert.deepEqual(names((f) => f.otp), ['XOR', 'XNOR']);
+  assert.deepEqual(names((f) => !f.separable), ['XOR', 'XNOR']);
+  assert.match(MESSAGES.ja['fn.result'], /XORとXNORの2つだけ/);
+  assert.match(MESSAGES.en['fn.result'], /only \*\*XOR and XNOR\*\*/);
+  assert.match(MESSAGES.ja['fn.result'], /2入力の16個を全部調べた結果/);
+  // 証明: b < 0、w1 + w2 + b < 0、w1 + b ≥ 0・w2 + b ≥ 0 から矛盾
+  for (const lang of ['ja', 'en']) assert.match(MESSAGES[lang]['fn.proof'], /w1 \+ w2 \+ b ≥ −b > 0/);
+  assert.match(MESSAGES.ja['gl.xnor.desc'], /単層のパーセプトロンでは作れない/);
 });
