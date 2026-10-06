@@ -4,64 +4,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Perceptron OTP Visualizer is an educational tool that visualizes logic gates, perceptron implementations, and demonstrates OTP (One-Time Pad) cryptography through perceptron analogy. The project is part of the "100 Security Tools with Generative AI" series (Day 057).
+Perceptron OTP Visualizer is an educational tool that visualizes logic gates built from NAND, the same gates built from perceptrons, XOR from a two-layer perceptron, and a one-time pad (OTP) computed with that perceptron XOR. The project is part of the "100 Security Tools with Generative AI" series (Day 057).
 
 ## Architecture
 
-The project is a single-page web application with vanilla JavaScript:
-- **index.html**: Main page with 5 tabs (NAND Universal, Perceptron Gates, Perceptron XOR, Perceptron OTP, Glossary)
-- **script.js**: Core logic implementing NAND gates, perceptron functions, XOR layers, and OTP encryption/decryption
-- **style.css**: Visual styling with gradient themes and responsive design
-- **data/words.json**: Glossary data with terms categorized by crypto, logic, ml, and bit
-- Uses MathJax CDN for mathematical notation rendering
+A single static page with plain scripts (no build, no dependencies, no CDN):
+
+```
+index.html            # Five tabs (NAND universality, Perceptron gates, Perceptron XOR, Perceptron OTP, Glossary); meta CSP is 'self' only
+style.css             # Color tokens for light/dark (OS setting or manual), layout, mobile rules
+js/potp-core.js       # PotpCore: NAND gates, perceptrons (PERCEPTRONS, gate, mlpXor), byte XOR (xorPerceptron, xorNative),
+                      #   hex/UTF-8 input (parseHex, parseInput, decodeUtf8, byteOwners, textSafety), randomBytes, bench
+js/messages.js        # PotpMessages: ja/en dictionary (t), glossary order (GLOSSARY, 28 terms)
+js/i18n.js            # PotpI18n: language detection (?lang= → stored → navigator), data-i18n / data-i18n-attr
+js/theme.js           # PotpTheme: light/dark toggle
+js/theme-init.js      # Applies the saved theme before drawing
+js/app.js             # UI only: APG tabs, truth-table rows (click/keys), OTP form and result, bit view, benchmark, glossary
+notebooks/            # Jupyter notebook (Python version of the gates and decision boundaries)
+test/                 # node --test (core, html, messages, i18n, contrast, format, readme)
+```
 
 ## Key Implementation Details
 
-### Logic Functions (script.js)
-- NAND-based implementations: `NAND_NOT`, `NAND_AND`, `NAND_OR`, `NAND_XOR`
-- Perceptron gates: `P_NOT`, `P_AND`, `P_OR`, `P_NAND` using step function
-- Two-layer XOR: `OR_unit`, `NAND_unit`, `AND_unit` for multi-layer perceptron
-- UTF-8 encoding/decoding for OTP operations
-
-### Perceptron Weight Configuration
-- NOT: `y = step(-a + 0.5)`
-- AND: `y = step(a + b - 1.5)`
-- OR: `y = step(a + b - 0.5)`
-- NAND: `y = step(-a - b + 1.5)`
-
-### Visualization Features
-- Real-time updates when inputs change via event listeners
-- Interactive truth tables with click-to-highlight rows
-- SVG-based circuit diagrams for NAND gate compositions
-- Bit-by-bit visualization for OTP operations (MSB→LSB order)
-- Performance benchmark comparing native XOR vs perceptron XOR
-- Dark/light theme toggle with localStorage persistence
+- Perceptron weights: NOT `step(-a + 0.5)`, AND `step(a + b - 1.5)`, OR `step(a + b - 0.5)`, NAND `step(-a - b + 1.5)`; step(z) = 1 if z ≥ 0
+- XOR: layer 1 h1 = OR(a, b), h2 = NAND(a, b); layer 2 AND(h1, h2)
+- OTP output is computed with the perceptron XOR (`xorPerceptron`) and checked against the operator `^` for every byte
+- Inputs and keys can be text (UTF-8) or hex. Ciphertext is passed to decryption in hex, because text loses CR (textarea turns it into LF) and invalid UTF-8 (U+FFFD)
+- Example: HELLO ⊕ XMCKL = `10 08 0F 07 03` (the key is an example, not random). "Make a random key" uses `crypto.getRandomValues`
+- Limits: 65,536 bytes per input; the bit view shows the first 16 bytes
+- Benchmark repeats each method for at least 100 ms and divides by repetitions (performance.now() resolution is 0.1 ms in Chromium, 1 ms in Firefox/Safari)
+- Static text is in `js/messages.js`; HTML holds the Japanese defaults with `data-i18n`. Rendering uses textContent only (no innerHTML)
+- localStorage (language, theme) is read and written inside try/catch
 
 ## Development Commands
 
-### Local Development
 ```bash
-# Open directly in browser (no build required)
-python -m http.server 8000
-# Then navigate to http://localhost:8000
-
-# Or use any static file server
-npx serve .
+npm test                      # node --test, Node.js 22+, no dependencies
+python -m http.server 8000    # then open http://localhost:8000/ (file:// also works)
 ```
 
-### Deployment
-The project is deployed via GitHub Pages at: https://ipusiron.github.io/perceptron-otp-visualizer/
-
 ## Testing Approach
-- Manual testing through the interactive UI
-- Verify truth tables match expected logic gate outputs
-- Test OTP encryption/decryption with sample text ("HELLO" with key "XMCKL")
-- Ensure UTF-8 handling works correctly for multi-byte characters
-- Run benchmark to verify native XOR and perceptron XOR produce identical results
+
+- `test/core.test.js`: gates, perceptron sums, XOR for all 256×256 byte pairs, the HELLO example, hex parsing, UTF-8 checks, round trips, random keys, benchmark with a fake clock
+- `test/html.test.js`: CSP, scripts, ARIA tabs, labels, static truth tables and SVG weights against the core, data-i18n defaults
+- `test/messages.test.js`: ja/en keys, no Japanese in English, writing rules, facts checked against primary sources
+- `test/contrast.test.js`: 4.5:1 for text, 3:1 for borders, in light and dark
+- `test/readme.test.js`: README structure and tables against the core
 
 ## Important Notes
-- This is an educational tool, NOT for production cryptography use
-- Uses fixed weights for perceptron gates (no learning/training)
-- Step function defined as: step(z) = 1 if z ≥ 0, else 0
-- OTP requires key and plaintext to have identical byte length
-- Glossary is dynamically loaded from `data/words.json` via fetch API
+
+- Educational tool, not for production cryptography. Weights are fixed by hand (no training)
+- An OTP is perfectly secret only with a uniformly random key at least as long as the plaintext, used once and kept secret; it does not stop tampering
+- GitHub Pages cannot set response headers; frame-ancestors and X-Frame-Options do not work in a meta element
+- Deployed via GitHub Pages: https://ipusiron.github.io/perceptron-otp-visualizer/
