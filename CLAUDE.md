@@ -11,15 +11,16 @@ Perceptron OTP Visualizer is an educational tool that visualizes logic gates bui
 A single static page with plain scripts (no build, no dependencies, no CDN):
 
 ```
-index.html            # Five tabs (NAND universality, Perceptron gates, Perceptron XOR, Perceptron OTP, Glossary); meta CSP is 'self' only
+index.html            # Six tabs (NAND universality, Perceptron gates, Perceptron XOR, Perceptron OTP, 16 functions and OTP, Glossary); meta CSP is 'self' only
 style.css             # Color tokens for light/dark (OS setting or manual), layout, mobile rules
 js/potp-core.js       # PotpCore: NAND gates, perceptrons (PERCEPTRONS, gate, mlpXor), byte XOR (xorPerceptron, xorNative),
-                      #   hex/UTF-8 input (parseHex, parseInput, decodeUtf8, byteOwners, textSafety), randomBytes, bench
-js/messages.js        # PotpMessages: ja/en dictionary (t), glossary order (GLOSSARY, 28 terms)
+                      #   hex/UTF-8 input (parseHex, parseInput, decodeUtf8, byteOwners, textSafety), randomBytes, bench,
+                      #   the 16 two-input functions (FUNCTIONS, applyFunction, recoverWithKey, leakWithoutKey)
+js/messages.js        # PotpMessages: ja/en dictionary (t), glossary order (GLOSSARY, 29 terms)
 js/i18n.js            # PotpI18n: language detection (?lang= → stored → navigator), data-i18n / data-i18n-attr
 js/theme.js           # PotpTheme: light/dark toggle
 js/theme-init.js      # Applies the saved theme before drawing
-js/app.js             # UI only: APG tabs, truth-table rows (click/keys), OTP form and result, bit view, benchmark, glossary
+js/app.js             # UI only: APG tabs, truth-table rows (click/keys), OTP form and result, bit view, benchmark, 16-function table and input plane, glossary
 notebooks/            # Jupyter notebook (Python version of the gates and decision boundaries)
 test/                 # node --test (core, html, messages, i18n, contrast, format, readme)
 ```
@@ -32,6 +33,7 @@ test/                 # node --test (core, html, messages, i18n, contrast, forma
 - Inputs and keys can be text (UTF-8) or hex. Ciphertext is passed to decryption in hex, because text loses CR (textarea turns it into LF) and invalid UTF-8 (U+FFFD)
 - Example: HELLO ⊕ XMCKL = `10 08 0F 07 03` (the key is an example, not random). "Make a random key" uses `crypto.getRandomValues`
 - Limits: 65,536 bytes per input; the bit view shows the first 16 bytes
+- 16 functions: f(p, k) with the truth table [f(0,0), f(0,1), f(1,0), f(1,1)] = the 4 bits of n. Decryptable = f(0,k) ≠ f(1,k) for both k; perfectly secret = P(C=1) does not depend on P for a uniform key. 14 are single-layer; only XOR and XNOR are both decryptable and perfectly secret (exactly the two that are not linearly separable). This is checked for 2 inputs only
 - Benchmark repeats each method for at least 100 ms and divides by repetitions (performance.now() resolution is 0.1 ms in Chromium, 1 ms in Firefox/Safari)
 - Static text is in `js/messages.js`; HTML holds the Japanese defaults with `data-i18n`. Rendering uses textContent only (no innerHTML)
 - localStorage (language, theme) is read and written inside try/catch

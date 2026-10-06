@@ -17,7 +17,7 @@
   };
 
   // ---- タブ（WAI-ARIA APG: 矢印キー・Home・End、選ぶとすぐ表示、選んでいるタブだけ tabindex=0） ----
-  const TABS = ['nand', 'gates', 'xor', 'otp', 'glossary'];
+  const TABS = ['nand', 'gates', 'xor', 'otp', 'functions', 'glossary'];
 
   function selectTab(name, focus) {
     for (const n of TABS) {
@@ -450,7 +450,192 @@
     }, 30);
   }
 
-  // ---- ⑤ 用語集 ----
+  // ---- ⑤ 16の関数と OTP ----
+  const fnState = { n: 6, key: C.utf8(C.SAMPLE.key), note: null };
+  const fnLabel = (f) => (f.name === 'FALSE' || f.name === 'TRUE' ? t(`fn.name.${f.name}`) : f.name);
+  const fmtNum = (x) => String(x).replace('-', '−');
+  const fmtProb = (x) => (x === 0.5 ? '1/2' : String(x));
+
+  // 重みとバイアスを式に（例: P + K − 1.5、−P + 0.5、−0.5）
+  function linearExpr(w, b) {
+    let s = '';
+    for (const [c, sym] of [[w[0], 'P'], [w[1], 'K']]) {
+      if (c === 0) continue;
+      const mag = Math.abs(c) === 1 ? sym : `${Math.abs(c)}${sym}`;
+      s += s ? ` ${c < 0 ? '−' : '+'} ${mag}` : `${c < 0 ? '−' : ''}${mag}`;
+    }
+    return s ? `${s} ${b < 0 ? '−' : '+'} ${Math.abs(b)}` : fmtNum(b);
+  }
+
+  function renderFnTable() {
+    const body = $('fn-body');
+    body.replaceChildren();
+    for (const f of C.FUNCTIONS) {
+      const tr = body.insertRow();
+      tr.dataset.n = String(f.n);
+      if (f.otp) tr.className = 'otp-row';
+      const cells = [String(f.n), ...f.tt.map(String), fnLabel(f),
+        f.separable ? t('fn.sepCell', { w1: fmtNum(f.weights.w[0]), w2: fmtNum(f.weights.w[1]), b: fmtNum(f.weights.b) }) : t('fn.no'),
+        t(f.invertible ? 'fn.yes' : 'fn.no'), t(f.secret ? 'fn.yes' : 'fn.no'), t(f.otp ? 'fn.yes' : 'fn.no')];
+      for (const v of cells) tr.insertCell().textContent = v;
+    }
+    selectFn(fnState.n, false);
+  }
+
+  function selectFn(n, focus) {
+    fnState.n = n;
+    for (const tr of $('fn-body').rows) {
+      const on = Number(tr.dataset.n) === n;
+      tr.classList.toggle('highlighted', on);
+      tr.tabIndex = on ? 0 : -1;
+      if (on) tr.setAttribute('aria-current', 'true');
+      else tr.removeAttribute('aria-current');
+      if (on && focus) tr.focus();
+    }
+    renderFnDetail();
+    renderFnExperiment();
+  }
+
+  // 入力の平面（横が P、縦が K、-0.5〜1.5）。出力が1の点は塗り、0の点は輪。単層で作れる関数は分ける直線を描く
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const px = (x) => (x + 0.5) * 100;
+  const py = (y) => (1.5 - y) * 100;
+  function svgEl(name, attrs, text) {
+    const el = document.createElementNS(SVG_NS, name);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+
+  function drawPlane(f) {
+    const svg = $('fn-plane');
+    svg.replaceChildren();
+    svg.append(svgEl('rect', { x: 1, y: 1, width: 198, height: 198, rx: 8, class: 'plane-frame' }));
+    for (const v of [0, 1]) {
+      svg.append(svgEl('line', { x1: px(v), y1: 8, x2: px(v), y2: 192, class: 'plane-grid' }));
+      svg.append(svgEl('line', { x1: 8, y1: py(v), x2: 192, y2: py(v), class: 'plane-grid' }));
+      svg.append(svgEl('text', { x: px(v), y: 196, class: 'plane-label', 'text-anchor': 'middle' }, `P=${v}`));
+      svg.append(svgEl('text', { x: 6, y: py(v) - 20, class: 'plane-label' }, `K=${v}`));
+    }
+    let line = 'fn.planeNoLine';
+    if (f.separable && (f.weights.w[0] || f.weights.w[1])) {
+      const [w1, w2] = f.weights.w;
+      const b = f.weights.b;
+      const pts = [];
+      for (const x of [-0.5, 1.5]) if (w2) pts.push([x, -(w1 * x + b) / w2]);
+      for (const y of [-0.5, 1.5]) if (w1) pts.push([-(w2 * y + b) / w1, y]);
+      const inside = pts.filter(([x, y]) => x >= -0.5 && x <= 1.5 && y >= -0.5 && y <= 1.5);
+      if (inside.length >= 2) {
+        const [[xa, ya], [xb, yb]] = inside;
+        svg.append(svgEl('line', { x1: px(xa), y1: py(ya), x2: px(xb), y2: py(yb), class: 'plane-line' }));
+      }
+      line = 'fn.planeLine';
+    } else if (f.separable) {
+      line = 'fn.planeConst';
+    }
+    const points = [];
+    for (const [p, k] of C.PAIRS) {
+      const v = C.fnValue(f.tt, p, k);
+      svg.append(svgEl('circle', { cx: px(p), cy: py(k), r: 15, class: v ? 'pt-one' : 'pt-zero' }));
+      svg.append(svgEl('text', { x: px(p), y: py(k) + 5, class: v ? 'pt-text-one' : 'pt-text-zero', 'text-anchor': 'middle' }, String(v)));
+      points.push(`(${p},${k})→${v}`);
+    }
+    svg.setAttribute('aria-label', t('fn.planeLabel', { points: points.join(t('fn.pointSep')), line: t(line) }));
+  }
+
+  function renderFnDetail() {
+    const f = C.FUNCTIONS[fnState.n];
+    setText('fn-detail-title', t('fn.title2', { no: f.n, name: fnLabel(f) }));
+    setText('fn-detail-sep', f.separable ? t('fn.sepYes', { expr: linearExpr(f.weights.w, f.weights.b) }) : t('fn.sepNo'));
+    setText('fn-detail-prob', t('fn.prob', { p0: fmtProb(f.p1[0]), p1: fmtProb(f.p1[1]) }));
+    const verdict = f.otp ? 'fn.verdictOtp' : f.secret ? 'fn.verdictSecretOnly' : f.invertible ? 'fn.verdictInvOnly' : 'fn.verdictNone';
+    const v = $('fn-detail-verdict');
+    v.textContent = t(verdict);
+    v.className = f.otp ? 'fn-verdict ok' : 'fn-verdict';
+    drawPlane(f);
+  }
+
+  // ビット列（MSB→LSB、1バイトごとに空白）。決まらないビットは ?。known(i, bit) が真のビットだけ値を出す。先頭の8バイトまで
+  const FN_BITS_BYTES = 8;
+  const maskedBits = (bytes, known) => Array.from(bytes.subarray(0, FN_BITS_BYTES), (b, i) => Array.from({ length: 8 }, (_, j) => {
+    const bit = 7 - j;
+    return known(i, bit) ? String((b >> bit) & 1) : '?';
+  }).join('')).join(' ') + (bytes.length > FN_BITS_BYTES ? ' …' : '');
+
+  function renderFnExperiment() {
+    const f = C.FUNCTIONS[fnState.n];
+    const r = C.parseInput($('fn-plain').value, 'text');
+    const info = $('fn-plain-info');
+    info.className = 'field-info';
+    info.textContent = fnState.note ? t(fnState.note) : '';
+    for (const id of ['fn-cipher', 'fn-recovered', 'fn-leak']) setText(id, '');
+    if (!r.ok) {
+      info.className = 'field-info error';
+      info.textContent = t('err.tooLong', { field: t('field.plain'), n: r.length, max: C.MAX_BYTES });
+      return;
+    }
+    const p = r.bytes;
+    if (!p.length) {
+      setText('fn-key-info', '');
+      info.textContent = t('fn.empty');
+      return;
+    }
+    if (fnState.key.length !== p.length) {
+      fnState.key = C.randomBytes(p.length, (a) => crypto.getRandomValues(a));
+      fnState.note = 'fn.keyNew';
+      info.textContent = t('fn.keyNew');
+    }
+    const k = fnState.key;
+    setText('fn-key-info', t(k.length > 32 ? 'fn.keyInfoLong' : 'fn.keyInfo', { n: k.length, hex: C.toHex(k.subarray(0, 32)) }));
+    const c = C.applyFunction(f.tt, p, k);
+    const rec = C.recoverWithKey(f.tt, c, k);
+    const leak = C.leakWithoutKey(f.tt, c);
+    const n = p.length * 8;
+    setText('fn-cipher', C.toHex(c));
+    setText('fn-recovered', rec.unknownBits ? t('fn.recSome', { bits: maskedBits(rec.bytes, (i, b) => !((rec.unknown[i] >> b) & 1)), u: rec.unknownBits, n })
+      : t('fn.recAll', { text: C.decodeUtf8(rec.bytes).text, n }));
+    if (!leak.knownBits) setText('fn-leak', t('fn.leakNone', { n }));
+    else if (leak.knownBits === n) setText('fn-leak', t('fn.leakAll', { n, text: C.decodeUtf8(leak.bytes).text }));
+    else setText('fn-leak', t('fn.leakSome', { k: leak.knownBits, n, bits: maskedBits(leak.bytes, (i, b) => (leak.known[i] >> b) & 1) }));
+  }
+
+  function initFunctions() {
+    const body = $('fn-body');
+    body.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr');
+      if (tr) selectFn(Number(tr.dataset.n), false);
+    });
+    body.addEventListener('keydown', (e) => {
+      const n = fnState.n;
+      const next = { ArrowDown: n + 1, ArrowUp: n - 1, Home: 0, End: 15 }[e.key];
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectFn(n, true);
+      } else if (next !== undefined) {
+        e.preventDefault();
+        selectFn(Math.max(0, Math.min(15, next)), true);
+      }
+    });
+    $('fn-plain').value = C.SAMPLE.plain;
+    $('fn-plain').addEventListener('input', () => {
+      fnState.note = null;
+      renderFnExperiment();
+    });
+    $('fn-random-key').addEventListener('click', () => {
+      const p = C.utf8($('fn-plain').value);
+      fnState.key = C.randomBytes(p.length, (a) => crypto.getRandomValues(a));
+      fnState.note = null;
+      renderFnExperiment();
+    });
+    $('fn-sample').addEventListener('click', () => {
+      $('fn-plain').value = C.SAMPLE.plain;
+      fnState.key = C.utf8(C.SAMPLE.key);
+      fnState.note = null;
+      renderFnExperiment();
+    });
+  }
+
+  // ---- ⑥ 用語集 ----
   let category = 'all';
 
   function renderGlossary() {
@@ -511,6 +696,7 @@
     renderStatus();
     renderResult();
     renderBench();
+    renderFnTable();
     renderGlossary();
     if (!$('bench-run').disabled) setText('bench-run', t('bench.run'));
   }
@@ -523,6 +709,7 @@
     fillSummary('gates-summary', C.perceptronSummary());
     fillSummary('xor-summary', C.mlpSummary());
     initOtp();
+    initFunctions();
     initGlossary();
     $('bench-run').addEventListener('click', runBench);
     $('btn-theme').addEventListener('click', () => Theme.toggle($('btn-theme')));

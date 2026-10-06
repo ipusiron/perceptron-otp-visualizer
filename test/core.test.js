@@ -196,3 +196,81 @@ test('例の鍵の注意: XMCKL は英大文字だけで、一様な乱数の鍵
   assert.equal(C.utf8(C.SAMPLE.plain).length, C.utf8(C.SAMPLE.key).length);
   assert.ok(C.VIZ_BYTES >= 8 && C.VIZ_BYTES <= 32);
 });
+
+test('2入力の論理関数16個: 番号と真理値表と名前が合う（f(0,0) が最上位の桁）', () => {
+  assert.equal(C.FUNCTIONS.length, 16);
+  assert.equal(new Set(C.FUNCTION_NAMES).size, 16);
+  const ops = {
+    FALSE: () => 0, AND: (p, k) => p & k, 'P∧¬K': (p, k) => p & (1 - k), P: (p) => p, '¬P∧K': (p, k) => (1 - p) & k, K: (p, k) => k,
+    XOR: (p, k) => p ^ k, OR: (p, k) => p | k, NOR: (p, k) => 1 - (p | k), XNOR: (p, k) => 1 - (p ^ k), '¬K': (p, k) => 1 - k,
+    'P∨¬K': (p, k) => p | (1 - k), '¬P': (p) => 1 - p, '¬P∨K': (p, k) => (1 - p) | k, NAND: (p, k) => 1 - (p & k), TRUE: () => 1
+  };
+  for (const f of C.FUNCTIONS) {
+    assert.deepEqual(f.tt, C.PAIRS.map(([p, k]) => ops[f.name](p, k)), f.name);
+    assert.equal(parseInt(f.tt.join(''), 2), f.n, f.name);
+  }
+  assert.deepEqual(C.truthTable(6), [0, 1, 1, 0]);
+  assert.equal(C.fnValue([0, 1, 1, 0], 1, 0), 1);
+});
+
+test('単層で作れるのは14個で、重みとバイアスの例はどれも真理値表どおり。作れないのは XOR と XNOR だけ', () => {
+  const sep = C.FUNCTIONS.filter((f) => f.separable);
+  assert.equal(sep.length, 14);
+  assert.deepEqual(C.FUNCTIONS.filter((f) => !f.separable).map((f) => f.name), ['XOR', 'XNOR']);
+  for (const f of sep) {
+    for (const [p, k] of C.PAIRS) assert.equal(C.step(f.weights.w[0] * p + f.weights.w[1] * k + f.weights.b), C.fnValue(f.tt, p, k), f.name);
+  }
+  // AND・OR・NAND の例は②のパーセプトロンと同じ重み
+  const byName = Object.fromEntries(C.FUNCTIONS.map((f) => [f.name, f]));
+  for (const g of ['AND', 'OR', 'NAND']) assert.deepEqual(byName[g].weights, C.PERCEPTRONS[g], g);
+  // XOR はもっと広い範囲（-4〜4 の 0.25 刻み）の重みでも作れない
+  const grid = Array.from({ length: 33 }, (_, i) => -4 + i * 0.25);
+  let found = 0;
+  for (const w1 of grid) for (const w2 of grid) for (const b of grid) {
+    if (C.PAIRS.every(([p, k]) => C.step(w1 * p + w2 * k + b) === (p ^ k))) found++;
+  }
+  assert.equal(found, 0);
+});
+
+test('鍵で戻せるのは4個、完全秘匿は6個、両方を満たす（OTP に使える）のは XOR と XNOR だけ', () => {
+  const names = (pred) => C.FUNCTIONS.filter(pred).map((f) => f.name);
+  assert.deepEqual(names((f) => f.invertible), ['P', 'XOR', 'XNOR', '¬P']);
+  assert.deepEqual(names((f) => f.secret), ['FALSE', 'K', 'XOR', 'XNOR', '¬K', 'TRUE']);
+  assert.deepEqual(names((f) => f.otp), ['XOR', 'XNOR']);
+  // OTP に使える2つは、単層で作れない2つと同じ
+  assert.deepEqual(names((f) => f.otp), names((f) => !f.separable));
+  // C = 1 となる確率（P = 0 のとき、P = 1 のとき）
+  const byName = Object.fromEntries(C.FUNCTIONS.map((f) => [f.name, f]));
+  assert.deepEqual(byName.AND.p1, [0, 0.5]);
+  assert.deepEqual(byName.XOR.p1, [0.5, 0.5]);
+  assert.deepEqual(byName.P.p1, [0, 1]);
+});
+
+test('16関数の実験: XOR は鍵で全部戻り鍵なしでは1ビットも決まらない。AND・P・K の例', () => {
+  const byName = Object.fromEntries(C.FUNCTIONS.map((f) => [f.name, f]));
+  const p = C.utf8('HELLO');
+  const k = C.utf8(C.SAMPLE.key);
+  const run = (name) => {
+    const f = byName[name];
+    const c = C.applyFunction(f.tt, p, k);
+    return { c, rec: C.recoverWithKey(f.tt, c, k), leak: C.leakWithoutKey(f.tt, c) };
+  };
+  const x = run('XOR');
+  assert.equal(C.toHex(x.c), '10 08 0F 07 03');
+  assert.deepEqual([C.decodeUtf8(x.rec.bytes).text, x.rec.unknownBits, x.leak.knownBits], ['HELLO', 0, 0]);
+  const xn = run('XNOR');
+  assert.equal(C.toHex(xn.c), 'EF F7 F0 F8 FC');
+  assert.deepEqual([C.decodeUtf8(xn.rec.bytes).text, xn.rec.unknownBits, xn.leak.knownBits], ['HELLO', 0, 0]);
+  // C = P: 鍵がなくても40ビットすべて決まる
+  const id = run('P');
+  assert.deepEqual([C.decodeUtf8(id.c).text, id.leak.knownBits, C.decodeUtf8(id.leak.bytes).text], ['HELLO', 40, 'HELLO']);
+  // C = K: 平文の情報は暗号文にないので、鍵があっても戻せない（40ビットとも決まらない）
+  const kk = run('K');
+  assert.deepEqual([C.toHex(kk.c), kk.rec.unknownBits, kk.leak.knownBits], [C.toHex(k), 40, 0]);
+  // AND: 暗号文の1のビットは平文も1と決まる。鍵があっても、鍵が0のビットは戻せない
+  const a = run('AND');
+  const ones = (bytes) => [...bytes].reduce((s, v) => s + v.toString(2).split('').filter((ch) => ch === '1').length, 0);
+  assert.equal(a.leak.knownBits, ones(a.c));
+  assert.equal(a.rec.unknownBits, 40 - ones(k));
+  assert.equal(ones(C.xorNative(a.leak.bytes, C.applyFunction(byName.AND.tt, a.leak.bytes, a.leak.known))), 0);
+});

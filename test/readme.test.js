@@ -13,12 +13,14 @@ const DOCS = {
   ja: {
     file: 'README.md', switcher: '[English](README.en.md) · 日本語', day: '**Day057 - 生成AIで作るセキュリティツール100**',
     h1: '# Perceptron OTP Visualizer - パーセプトロンOTP可視化ツール', shots: /^assets\/screenshot\d*\.png$/,
-    h2: ['🌐 デモページ', '📸 スクリーンショット', '✨ 機能', '📖 使い方', '🔑 ワンタイムパッドの条件', '🎯 ユースケース', '🔬 技術的な説明',
+    h2: ['🌐 デモページ', '📸 スクリーンショット', '✨ 機能', '📖 使い方', '🔑 ワンタイムパッドの条件', '🧮 16の関数とワンタイムパッド', '🎯 ユースケース', '🔬 技術的な説明',
       '🔒 セキュリティ', '⚠️ 注意と限界', '🧪 テスト', '🔗 参考文献', '🔄 今後の拡張予定', '📁 ディレクトリー構造', '💻 動作環境', '📄 ライセンス',
       '🛠️ このツールについて'],
-    head: { weights: '| ゲート | 重み | バイアス | 式 |', nand: '| ゲート | NANDの個数 | 式 |', mlp: '| a | b | h1 = OR(a, b) |', otp: '| | テキスト | 16進数 |' },
+    head: { weights: '| ゲート | 重み | バイアス | 式 |', nand: '| ゲート | NANDの個数 | 式 |', mlp: '| a | b | h1 = OR(a, b) |', otp: '| | テキスト | 16進数 |',
+      fn: '| 番号 | 真理値表 | 関数 |', exp: '| 関数 | 暗号文C（16進数） |' },
+    yes: 'はい', no: 'いいえ', sep: (w1, w2, b) => `はい（${w1}, ${w2}, ${b}）`, fnName: { FALSE: '常に0（FALSE）', TRUE: '常に1（TRUE）' },
     otpRows: ['平文P', '鍵K', '暗号文C = P ⊕ K'],
-    facts: ['そのうち14個です', 'XORとXNORの2つです', '65,536バイトまで', '先頭の16バイトまで', '用語集', '28語', '10,000バイトの乱数どうし', '0.1秒以上'],
+    facts: ['そのうち14個です', 'XORとXNORの2つです', '65,536バイトまで', '先頭の16バイトまで', '用語集', '29語', '10,000バイトの乱数どうし', '0.1秒以上'],
     project: 'https://akademeia.info/?page_id=42163',
     // 長音のない表記・「わかる」の漢字書き（分ける・分かれるは漢字のまま）・事実と食い違う古い記述
     forbidden: new RegExp(['ブラウザ(?!ー)', 'フォルダ(?!ー)', 'ディレクトリ(?!ー)', 'リポジトリ(?!ー)', 'ライブラリ(?!ー)', 'エディタ(?!ー)',
@@ -28,13 +30,15 @@ const DOCS = {
   en: {
     file: 'README.en.md', switcher: 'English · [日本語](README.md)', day: '**Day057 - 100 Security Tools with Generative AI**',
     h1: '# Perceptron OTP Visualizer - Perceptron-based OTP Encryption Visualizer', shots: /^assets\/en\/screenshot\d*\.png$/,
-    h2: ['🌐 Demo', '📸 Screenshots', '✨ Features', '📖 How to use', '🔑 One-time pad conditions', '🎯 Use cases', '🔬 Technical notes',
+    h2: ['🌐 Demo', '📸 Screenshots', '✨ Features', '📖 How to use', '🔑 One-time pad conditions', '🧮 The 16 functions and the one-time pad',
+      '🎯 Use cases', '🔬 Technical notes',
       '🔒 Security', '⚠️ Notes and limitations', '🧪 Tests', '🔗 References', '🔄 Planned extensions', '📁 Directory structure', '💻 Requirements',
       '📄 License', '🛠️ About this tool'],
     head: { weights: '| Gate | Weights | Bias | Formula |', nand: '| Gate | NAND gates | Formula |', mlp: '| a | b | h1 = OR(a, b) |',
-      otp: '| | Text | Hex |' },
+      otp: '| | Text | Hex |', fn: '| No. | Truth table | Function |', exp: '| Function | Ciphertext C (hex) |' },
+    yes: 'Yes', no: 'No', sep: (w1, w2, b) => `Yes (${w1}, ${w2}, ${b})`, fnName: { FALSE: 'Always 0 (FALSE)', TRUE: 'Always 1 (TRUE)' },
     otpRows: ['Plaintext P', 'Key K', 'Ciphertext C = P ⊕ K'],
-    facts: ['express 14 of them', 'are XOR and XNOR', 'limited to 65,536 bytes', 'shows the first 16 bytes', '28 terms', 'two random 10,000-byte inputs',
+    facts: ['express 14 of them', 'are XOR and XNOR', 'limited to 65,536 bytes', 'shows the first 16 bytes', '29 terms', 'two random 10,000-byte inputs',
       'at least 0.1 seconds'],
     project: 'https://akademeia.info/?page_id=42163',
     forbidden: /MathJax|Subresource Integrity|X-Content-Type-Options|ideal for embedded|theoretically maximal|settings\.local\.json|words\.json|script\.js/i
@@ -96,7 +100,7 @@ test('冒頭の形（言語の切り替え・H1・バッジ5種・Dayの行）�
 test('画像: README から参照する画像はすべて実在し300KB以下。assets の PNG は README から参照されているものだけ', () => {
   for (const d of Object.values(DOCS)) {
     const refs = [...d.text.matchAll(/!\[[^\]]*\]\((assets\/[^)]+)\)/g)].map((m) => m[1]);
-    assert.equal(refs.length, 7, d.file);
+    assert.equal(refs.length, 8, d.file);
     for (const r of refs) {
       assert.match(r, d.shots, r);
       const st = fs.statSync(path.join(ROOT, r));
@@ -157,11 +161,11 @@ test('ワンタイムパッドの例（HELLO ⊕ XMCKL と café ⊕ kkkkk）は
   }
 });
 
-test('README に書いた数（14個・65,536バイト・16バイト・28語・10,000バイト・0.1秒）は、計算部と画面の値に合う', () => {
+test('README に書いた数（14個・65,536バイト・16バイト・29語・10,000バイト・0.1秒）は、計算部と画面の値に合う', () => {
   for (const d of Object.values(DOCS)) for (const f of d.facts) assert.ok(d.text.includes(f), `${d.file}: ${f}`);
   assert.equal(C.MAX_BYTES, 65536);
   assert.equal(C.VIZ_BYTES, 16);
-  assert.equal(GLOSSARY.length, 28);
+  assert.equal(GLOSSARY.length, 29);
   assert.match(read('js/app.js'), /C\.bench\(\{ n: 10000, budgetMs: 100,/);
 });
 
@@ -218,4 +222,34 @@ test('ノートブックの書名の誤記と、AND の関数名を直してあ�
   assert.match(nb, /ディープラーニングのしくみ/);
   assert.equal((nb.match(/perceptron_and/g) || []).length, 4);
   JSON.parse(nb);
+});
+
+test('16の関数の表は、計算部の FUNCTIONS（真理値表・単層の重み・鍵で戻せるか・完全秘匿か・OTP）と同じ', () => {
+  for (const d of Object.values(DOCS)) {
+    const rows = table(section(d.text, sec(d, '🧮')), d.head.fn);
+    assert.equal(rows.length, 16, d.file);
+    for (const [k, f] of C.FUNCTIONS.entries()) {
+      const [no, tt, name, sep, inv, secret, otp] = rows[k];
+      const yn = (v) => (v ? d.yes : d.no);
+      assert.deepEqual([Number(no), tt, name], [f.n, f.tt.join(''), d.fnName[f.name] || f.name], `${d.file} ${f.name}`);
+      assert.equal(sep, f.separable ? d.sep(f.weights.w[0], f.weights.w[1], f.weights.b) : d.no, `${d.file} ${f.name}`);
+      assert.deepEqual([inv, secret, otp], [yn(f.invertible), yn(f.secret), yn(f.otp)], `${d.file} ${f.name}`);
+    }
+  }
+});
+
+test('16の関数の実験の表（HELLO・XMCKL）は、計算部で暗号化して数えた値と同じ', () => {
+  const p = C.utf8(C.SAMPLE.plain);
+  const k = C.utf8(C.SAMPLE.key);
+  for (const d of Object.values(DOCS)) {
+    const rows = table(section(d.text, sec(d, '🧮')), d.head.exp);
+    assert.deepEqual(rows.map((r) => r[0]), ['XOR', 'XNOR', 'P', 'K', 'AND', 'OR'], d.file);
+    for (const [name, hex, unknown, known] of rows) {
+      const f = C.FUNCTIONS.find((x) => x.name === name);
+      const c = C.applyFunction(f.tt, p, k);
+      assert.equal(hex, C.toHex(c), `${d.file} ${name}`);
+      assert.equal(unknown, `${C.recoverWithKey(f.tt, c, k).unknownBits} / 40`, `${d.file} ${name}`);
+      assert.equal(known, `${C.leakWithoutKey(f.tt, c).knownBits} / 40`, `${d.file} ${name}`);
+    }
+  }
 });
