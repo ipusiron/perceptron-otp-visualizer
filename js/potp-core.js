@@ -2,6 +2,7 @@
 // - NAND だけで組むゲート（途中の値つき）と、固定の重みの単層パーセプトロン（NOT・AND・OR・NAND）
 // - 2層パーセプトロンの XOR（第1層 OR・NAND、第2層 AND）と、それをビットごとに使うバイト列の XOR
 // - ワンタイムパッドの入出力（テキスト〔UTF-8〕と16進数）、乱数の鍵、UTF-8 として読めるかの判定、速度の比較
+// - 2入力の論理関数16個: 単層で作れるか・鍵で戻せるか・完全秘匿か（ワンタイムパッドの組み合わせの関数に使えるか）
 (() => {
   'use strict';
 
@@ -234,10 +235,91 @@
     return { n, native, perceptron, ratio: perceptron.nsPerByte / native.nsPerByte, equal: equalBytes(native.out, perceptron.out) };
   }
 
+  // ---- 2入力の論理関数16個と、ワンタイムパッドの組み合わせの関数（C = f(P, K)）としての性質 ----
+  // 番号 n の真理値表は [f(0,0), f(0,1), f(1,0), f(1,1)] = n の2進4桁（f(0,0) が最上位）。引数の順は (p, k)
+  const FUNCTION_NAMES = ['FALSE', 'AND', 'P∧¬K', 'P', '¬P∧K', 'K', 'XOR', 'OR', 'NOR', 'XNOR', '¬K', 'P∨¬K', '¬P', '¬P∨K', 'NAND', 'TRUE'];
+  const truthTable = (n) => [3, 2, 1, 0].map((s) => (n >> s) & 1);
+  const fnValue = (tt, p, k) => tt[p * 2 + k];
+
+  // 単層パーセプトロン step(w1·p + w2·k + b) で表せるか。表せるときは重みとバイアスの例（重みの絶対値の和が小さいものから探す）
+  const WEIGHT_STEPS = [0, 1, -1, 2, -2];
+  const BIAS_STEPS = [-0.5, 0.5, -1.5, 1.5, -2.5, 2.5];
+  function separate(tt) {
+    const cands = [];
+    for (const w1 of WEIGHT_STEPS) for (const w2 of WEIGHT_STEPS) for (const b of BIAS_STEPS) cands.push({ w: [w1, w2], b });
+    cands.sort((x, y) => Math.abs(x.w[0]) + Math.abs(x.w[1]) - Math.abs(y.w[0]) - Math.abs(y.w[1]));
+    return cands.find((c) => PAIRS.every(([p, k]) => step(c.w[0] * p + c.w[1] * k + c.b) === fnValue(tt, p, k))) || null;
+  }
+
+  // 鍵で戻せる: どの鍵でも P → C が1対1（f(0,k) ≠ f(1,k)）
+  const invertible = (tt) => [0, 1].every((k) => fnValue(tt, 0, k) !== fnValue(tt, 1, k));
+  // 完全秘匿: 鍵が一様な乱数のとき、C = 1 となる確率が P によらない
+  const oneProb = (tt, p) => (fnValue(tt, p, 0) + fnValue(tt, p, 1)) / 2;
+  const perfectlySecret = (tt) => oneProb(tt, 0) === oneProb(tt, 1);
+
+  const FUNCTIONS = FUNCTION_NAMES.map((name, n) => {
+    const tt = truthTable(n);
+    const sep = separate(tt);
+    const inv = invertible(tt);
+    const secret = perfectlySecret(tt);
+    return { n, name, tt, separable: sep !== null, weights: sep, invertible: inv, secret, otp: inv && secret, p1: [oneProb(tt, 0), oneProb(tt, 1)] };
+  });
+
+  // バイト列の各ビットに f を使う（C = f(P, K)）
+  function applyFunction(tt, a, b) {
+    const out = new Uint8Array(a.length);
+    for (let i = 0; i < a.length; i++) {
+      let byte = 0;
+      for (let bit = 7; bit >= 0; bit--) byte |= fnValue(tt, (a[i] >> bit) & 1, (b[i] >> bit) & 1) << bit;
+      out[i] = byte;
+    }
+    return out;
+  }
+
+  // 鍵を知っていて戻す: 各ビットで f(p, k) = c となる p が1つなら決まる。2つなら決まらない（unknown のビットは 1、bytes では 0 にしておく）
+  function recoverWithKey(tt, c, k) {
+    const bytes = new Uint8Array(c.length);
+    const unknown = new Uint8Array(c.length);
+    let count = 0;
+    for (let i = 0; i < c.length; i++) {
+      for (let bit = 7; bit >= 0; bit--) {
+        const cb = (c[i] >> bit) & 1;
+        const kb = (k[i] >> bit) & 1;
+        const ps = [0, 1].filter((p) => fnValue(tt, p, kb) === cb);
+        if (ps.length === 1) bytes[i] |= ps[0] << bit;
+        else {
+          unknown[i] |= 1 << bit;
+          count++;
+        }
+      }
+    }
+    return { bytes, unknown, unknownBits: count };
+  }
+
+  // 鍵を知らなくても決まる平文のビット: 暗号文のビット c を出せる p が1つしかないとき（どの鍵でも同じ p）
+  function leakWithoutKey(tt, c) {
+    const known = new Uint8Array(c.length);
+    const bytes = new Uint8Array(c.length);
+    let count = 0;
+    for (let i = 0; i < c.length; i++) {
+      for (let bit = 7; bit >= 0; bit--) {
+        const cb = (c[i] >> bit) & 1;
+        const ps = [0, 1].filter((p) => [0, 1].some((k) => fnValue(tt, p, k) === cb));
+        if (ps.length === 1) {
+          known[i] |= 1 << bit;
+          bytes[i] |= ps[0] << bit;
+          count++;
+        }
+      }
+    }
+    return { known, bytes, knownBits: count };
+  }
+
   globalThis.PotpCore = {
     step, PAIRS, NAND, nandNot, nandAnd, nandOr, nandXor,
     PERCEPTRONS, GATES, neuron, gate, mlpXor, nandSummary, perceptronSummary, mlpSummary,
     MAX_BYTES, VIZ_BYTES, utf8, decodeUtf8, toHex, toBits, parseHex, parseInput, equalBytes,
-    xorNative, xorPerceptron, byteTrace, byteOwners, isControl, textSafety, randomBytes, SAMPLE, bench
+    xorNative, xorPerceptron, byteTrace, byteOwners, isControl, textSafety, randomBytes, SAMPLE, bench,
+    FUNCTION_NAMES, FUNCTIONS, truthTable, fnValue, separate, invertible, perfectlySecret, applyFunction, recoverWithKey, leakWithoutKey
   };
 })();
