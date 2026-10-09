@@ -193,6 +193,12 @@ The experiment in the ⑤ tab makes a ciphertext from the plaintext and the key 
 
 ## 🎯 Use cases
 
+### Ways of using this tool in particular
+
+- Rebuilding one lost piece of data with XOR (RAID 5 parity, information classes): in ④, enter Hello as the input and World as the key and encrypt, and you get 1F 0A 1E 00 0B in hexadecimal. Keep it as parity, and if Hello is lost, the XOR of the parity and World gives Hello back. It is the same calculation RAID 5 in a NAS or a server uses to rebuild data after one disk fails (real RAID 5 XORs the data of three or more disks together and rotates where the parity is stored from disk to disk)
+- Counting the bits that differ (transmission errors, Hamming distance): the XOR of the input cat and the key cut is 00 14 00, with two bits set to 1. Which bits of two pieces of data differ, and how many (the Hamming distance), shows up directly in the bit-by-bit table. PASSWORD and PASSW0RD (the letter O and the digit 0), which look alike, differ by as many as seven bits in the sixth byte alone
+- Checking that upper and lower case differ by one bit (how the ASCII table is laid out, information classes): XOR the input Hello with the key 20 20 20 20 20 in hexadecimal (five times 0x20) and you get hELLO. Upper- and lower-case letters sit 0x20 (32) apart in the ASCII table, so flipping exactly one bit switches between them
+
 ### Learning and teaching
 
 - In an information class or a logic-circuit lecture, the teacher selects rows in ① to show that XOR can be built from NAND alone. Students can follow the number of NAND gates (1, 2, 3 and 4) and the intermediate values

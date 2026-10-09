@@ -253,3 +253,25 @@ test('16の関数の実験の表（HELLO・XMCKL）は、計算部で暗号化�
     }
   }
 });
+
+test('ユースケースの「このツールならではの使い方」のXORの例は計算部と同じ（日英）', () => {
+  const [ja, en] = [read('README.md'), read('README.en.md')];
+  const x = (a, b) => C.xorNative(a, b);
+  const u = C.utf8;
+  const ones = (bytes) => [...bytes].reduce((s, b) => s + [...b.toString(2)].filter((c) => c === '1').length, 0);
+  const parity = x(u('Hello'), u('World'));
+  assert.equal(C.toHex(parity), '1F 0A 1E 00 0B');
+  assert.equal(C.decodeUtf8(x(parity, u('World'))).text, 'Hello');
+  const diff = x(u('cat'), u('cut'));
+  assert.deepEqual([C.toHex(diff), ones(diff)], ['00 14 00', 2]);
+  const pw = x(u('PASSWORD'), u('PASSW0RD'));
+  assert.deepEqual([C.toHex(pw), ones(pw)], ['00 00 00 00 00 7F 00 00', 7]);
+  const key = C.parseHex('20 20 20 20 20');
+  assert.ok(key.ok);
+  assert.equal(C.decodeUtf8(x(u('Hello'), key.bytes)).text, 'hELLO');
+  for (const text of [ja, en]) {
+    for (const part of ['1F 0A 1E 00 0B', '00 14 00', '20 20 20 20 20', 'hELLO', 'PASSW0RD']) assert.ok(text.includes(part), part);
+  }
+  assert.ok(ja.includes('1になったビットは2個') && ja.includes('7ビットも違う'));
+  assert.ok(en.includes('two bits set to 1') && en.includes('seven bits'));
+});
